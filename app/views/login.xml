@@ -1,5 +1,5 @@
 <Alloy>
-    <Window zIndex="100">
+    <Window id="window" zIndex="100">
         <View id="view_login">
             <Label id="lbl_login" textid="loginTitle"></Label>
             <TextField id="username" hintText="Username@pod"></TextField>

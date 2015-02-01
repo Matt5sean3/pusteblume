@@ -5,124 +5,165 @@ var aspects = null;
 var userinfo = null;
 var newPosts = 0;
 var lastID = 0;
-var isOut = false;
 
-var content = Alloy.createWidget("list", "widget", {
-    getStream : getStream, click : true, showImage : showImage, getMore:getMore
-});
-$.content.add(content.getView());
+var initialProperties = {
+    token: "",
+    invitelink: "",
+    lastNotification: "0",
+    lastPost: "0",
+    stream: "stream",
+    username: "",
+    aspect: "public",
+    aspectID: "public",
+    pod: "https://joindiaspora.com",
+    cookie_session: "",
+    cookie_user: ""
+};
+var updatedProperties = {
+    lastDate: new Date().getTime()/1000
+};
 
-if (!Ti.App.Properties.hasProperty("token")) {
-    Ti.App.Properties.setString("token", "");
+function PusteBlumeApp(window, initialProperties, updatedProperties, contentContainer, viewOptionLabels, aspectButton, streamView, logoutButton, submitButton, writeButton, photoButton, refreshButton, closeButton, inviteLabel, settingsButton, bigImage, aspectsView, streamLabel, photoView, text, waiting)
+{
+    this.isOut = false;
+    for(property in initialProperties)
+    {
+        if(!Ti.App.Properties.hasProperty(property))
+            Ti.App.Properties.setString(property, initialProperties[property]);
+    }
+    for(property in updatedProperties)
+    {
+        Ti.App.Properties.setString(property, updatedProperties[property]);
+    }
+    this.contentContainer = contentContainer;
+    this.content = Alloy.createWidget("list", "widget", {
+        getStream : this.getStream.bind(this), 
+        click : true, 
+        showImage : this.showImage.bind(this), 
+        getMore: this.getMore.bind(this)
+        });
+    this.contentContainer.add(this.content.getView());
+    // caches result for some reason
+    this.lastID = Ti.App.Properties.getString("lastPost");
+    this.aspectButton = aspectButton;
+    this.aspectButton.title = Ti.App.Properties.getString("aspect");
+    this.loginController = Alloy.createController("login", {
+            getStream : this.getStream.bind(this), 
+            getToken : this.getToken.bind(this), 
+            getUserInfo : this.getUserInfo.bind(this)
+            });
+    this.settingsController = Alloy.createController("settings");
+    this.viewOptions = viewOptionLabels;
+    this.streamView = streamView;
+    this.logoutButton = logoutButton;
+    this.submitButton = submitButton;
+    this.writeButton = writeButton;
+    this.photoButton = photoButton;
+    this.refreshButton = refreshButton;
+    this.closeButton = closeButton;
+    this.inviteLabel = inviteLabel;
+    this.settingsButton = settingsButton;
+    this.bigImage = bigImage;
+    this.aspectsView = aspectsView;
+    this.streamLabel = streamLabel;
+    this.text = text;
+    this.waiting = waiting;
+    // events
+    //
+    for(var c = 0; c < this.viewOptions.length; c++)
+    {
+        this.viewOptions[c].addEventListener("click", this.chooseStream.bind(this));
+    }
+    Ti.App.addEventListener("resume", this.resume.bind(this));
+    this.aspectButton.addEventListener("click", this.showAspects.bind(this));
+    this.streamView.addEventListener("click", this.toggleStreamVisibility.bind(this));
+    this.logoutButton.addEventListener("click", this.attemptLogout.bind(this));
+    this.submitButton.addEventListener("click", this.attemptSubmit.bind(this));
+    this.photoButton.addEventListener("click", this.showPhoto.bind(this));
+    this.writeButton.addEventListener("click", this.onClickWrite.bind(this));
+    this.refreshButton.addEventListener("click", this.refresh.bind(this));
+    this.bigImage.addEventListener("click", this.hideImage.bind(this));
+    this.closeButton.addEventListener("click", this.hideImage.bind(this));
+    this.inviteLabel.addEventListener("click", this.invite.bind(this));
+    this.settingsButton.addEventListener("click", this.openSettings.bind(this));
+    
+    this.logoutButton.addEventListener("touchstart", this.highlight.bind(this));
+    this.writeButton.addEventListener("touchstart", this.highlight.bind(this));
+    this.refreshButton.addEventListener("touchstart", this.highlight.bind(this));
+
+    this.logoutButton.addEventListener("touchend", this.lowlight.bind(this));
+    this.writeButton.addEventListener("touchend", this.lowlight.bind(this));
+    this.refreshButton.addEventListener("touchend", this.lowlight.bind(this));
+    window.open();
+    if (Ti.App.Properties.getString("cookie_session") === "" || 
+        !Ti.App.Properties.getBool("loggedIn")) {
+        this.loginController.getView().open();
+    }
+    Ti.App.addEventListener('checkNotifications', function(data) {
+        checkNotification();
+    });
+    if (Ti.App.Properties.getString("cookie_session") !== "" && Ti.App.Properties.getBool("loggedIn")) {
+        this.getStream();
+        this.getUserInfo();
+    }
 }
 
-if (!Ti.App.Properties.hasProperty("invitelink")) {
-    Ti.App.Properties.setString("invitelink", "");
-}
-
-if (!Ti.App.Properties.hasProperty("lastNotification")) {
-    Ti.App.Properties.setString("lastNotification", "0");
-}
-
-if (!Ti.App.Properties.hasProperty("lastPost")) {
-    Ti.App.Properties.setString("lastPost", "0");
-} else {
-    lastID = Ti.App.Properties.getString("lastPost");
-}
-
-//if (!Ti.App.Properties.hasProperty("lastDate")) {
-    Ti.App.Properties.setString("lastDate", new Date().getTime()/1000);
-//}
-
-
-if (!Ti.App.Properties.hasProperty("stream") || Ti.App.Properties.getString("stream") === "") {
-    Ti.App.Properties.setString("stream", "stream");
-}
-
-if (!Ti.App.Properties.hasProperty("username")) {
-    Ti.App.Properties.setString("username", "");
-}
-
-if (!Ti.App.Properties.hasProperty("aspect")) {
-    Ti.App.Properties.setString("aspect", "public");
-}
-if (!Ti.App.Properties.hasProperty("aspectID")) {
-    Ti.App.Properties.setString("aspectID", "public");
-}
-
-$.btn_aspect.title = Ti.App.Properties.getString("aspect");
-
-if (!Ti.App.Properties.hasProperty("pod")) {
-    Ti.App.Properties.setString("pod", "https://joindiaspora.com");
-}
-
-if (!Ti.App.Properties.hasProperty("cookie_session"))
-    Ti.App.Properties.setString("cookie_session", "");
-
-if (!Ti.App.Properties.hasProperty("cookie_user"))
-    Ti.App.Properties.setString("cookie_user", "");
-
-$.index.open();
-
-if (Ti.App.Properties.getString("cookie_session") === "" || Ti.App.Properties.getBool("loggedIn") == false) {
-    var obj = Alloy.createController("login", {
-        getStream : getStream, getToken : getToken, getUserInfo : getUserInfo
-    }).getView();
-    obj.open();
-}
-
-function onToken(e) {
+PusteBlumeApp.prototype.tokenSuccess = function(e)
+{
     // extract token
     //
     var m = /.*authenticity_token.*value=\"(.*)\"/;
     var res = String(e).match(m);
     Ti.App.Properties.setString("token", res[1]);
+};
 
-}
+PusteBlumeApp.prototype.tokenError = function(e)
+{
+    Ti.API.error("no token");    
+};
 
-function onTokenError(e) {
-    // extract token
-    //
-    Ti.API.error("no token");
-}
-
-function getToken() {
+PusteBlumeApp.prototype.getToken = function(e)
+{
     // get new token after login
-
     Ti.API.info("get login token");
 
     require("/api").createAPI({
-        type : "GET", url : "/stream", success : onToken, error : onTokenError, noJSON : true
+        type : "GET", 
+        url : "/stream", 
+        success : this.tokenSuccess.bind(this), 
+        error : this.tokenError.bind(this), 
+        noJSON : true
     });
-}
+};
 
-Ti.App.addEventListener('checkNotifications', function(data) {
-    checkNotification();
-});
-
-function getStream() {
-    // get stream
-    //
-    $.waiting.message = " " + L("getStream");
-    $.waiting.show();
+PusteBlumeApp.prototype.getStream = function()
+{
+    this.waiting.message = " " + L("getStream");
+    this.waiting.show();
 
     require("/api").createAPI({
-        type : "GET", url : "/" + Ti.App.Properties.getString("stream"), success : onStream, token : true, error : onStreamError
+        type : "GET", url : "/" + Ti.App.Properties.getString("stream"), 
+        success : this.streamSuccess.bind(this), 
+        token : true, 
+        error : this.streamError.bind(this)
     });
-}
+};
 
-function onClickOptionAspects(e) {
-    $.view_aspects.hide();
+PusteBlumeApp.prototype.chooseAspect = function(e)
+{
+    this.aspectsView.hide();
     Ti.App.Properties.setString("aspectID", e.source.id);
     Ti.App.Properties.setString("aspect", e.source.title);
-    $.btn_aspect.title = e.source.title;
-}
+    this.aspectButton.title = e.source.title;
+};
 
-function onClickAspects(e) {
-    $.view_aspects.show();
-}
+PusteBlumeApp.prototype.showAspects = function(e)
+{
+    this.aspectsView.show();
+};
 
-function onStream(e) {
+PusteBlumeApp.prototype.streamSuccess = function(e)
+{
     data = [];
     newPosts = 0;
     var lid = Ti.App.Properties.getString("lastPost");
@@ -149,7 +190,17 @@ function onStream(e) {
 
 
         data.push({
-            photo : photo, photoBig : photoBig, date : Alloy.Globals.formatDate(e[i].created_at), myFav : myFav, favID : favID, isPublic : e[i]["public"], author : e[i].author.name, comment_count : String(e[i].interactions.comments_count), text : txt, icon : e[i].author.avatar.small, id : e[i].id, like_count : String(e[i].interactions.likes_count)
+            photo : photo, 
+            photoBig : photoBig, 
+            date : Alloy.Globals.formatDate(e[i].created_at), 
+            myFav : myFav, 
+            favID : favID, 
+            isPublic : e[i]["public"], 
+            author : e[i].author.name, 
+            comment_count : String(e[i].interactions.comments_count), 
+            text : txt, icon : e[i].author.avatar.small, 
+            id : e[i].id, 
+            like_count : String(e[i].interactions.likes_count)
         });
         txt = null;
         myFav = null;
@@ -169,103 +220,108 @@ function onStream(e) {
     }
 
     if (newPosts > 0) {
-        showNotification(newPosts);
+        this.showNotification(newPosts);
         newPostss = 0;
     }
     lastID = lid;
     Ti.App.Properties.setString("lastPost", lastID);
     lid = null;
-    content.setData(data);
-    $.waiting.hide();
-}
+    this.content.setData(data);
+    this.waiting.hide();
+    
+};
 
-function onStreamError(e) {
-    $.waiting.hide();
-}
+PusteBlumeApp.prototype.streamError = function(e)
+{
+    this.waiting.hide();
+};
 
-function onClickStreamOption(e) {
+PusteBlumeApp.prototype.chooseStream = function(e)
+{
     var txt = "stream";
     if (e.source.optionID === 0) {
         txt = "stream";
-        $.lbl_stream.text = L("txt_stream");
+        this.streamLabel.text = L("txt_stream");
     } else if (e.source.optionID == 1) {
         txt = "activity";
-        $.lbl_stream.text = L("txt_activity");
+        this.streamLabel.text = L("txt_activity");
     } else if (e.source.optionID == 2) {
         txt = "mentions";
-        $.lbl_stream.text = L("txt_mentions");
+        this.streamLabel.text = L("txt_mentions");
     } else if (e.source.optionID == 3) {
         txt = "followed_tags";
-        $.lbl_stream.text = L("txt_followedtags");
+        this.streamLabel.text = L("txt_followedtags");
     }
 
     Ti.App.Properties.setString("stream", txt);
 
     // get new stuff
-    getStream();
+    this.getStream();
     txt = null;
 
     // hide menu
-    onClickStream(null);
-}
+    this.toggleStreamVisibility();
+};
 
-function onClickStream(e) {
-
+PusteBlumeApp.prototype.toggleStreamVisibility = function(e)
+{
     var ani = Ti.UI.createAnimation();
-    if (isOut) {
+    if (this.isOut) {
         // hide menu
         ani.left = -200;
-        isOut = false;
+        this.isOut = false;
     } else {
         // show menu
         ani.left = 0;
-        isOut = true;
+        this.isOut = true;
     }
     ani.duration = 200;
     $.view_menu_stream.animate(ani);
     ani = null;
-}
+};
 
-function onLogout(e) {
+PusteBlumeApp.prototype.logoutSuccess = function(e)
+{
     Ti.App.Properties.setString("cookie_session", "");
     Ti.App.Properties.setString("token", "");
     Ti.App.Properties.setBool("loggedIn", false);
-    $.waiting.hide();
-    $.text.value = "";
-    var obj = Alloy.createController("login", {
-        getStream : getStream, getToken : getToken, getUserInfo : getUserInfo
-    }).getView();
-    obj.open();
+    this.waiting.hide();
+    this.text.value = "";
+    this.loginController.getView().open();
 
     blob = null;
-    $.btn_photo.backgroundColor = "#373937";
-}
+    this.photoButton.backgroundColor = "#373937";
+};
 
-function onLogoutError(e) {
-    $.waiting.hide();
+PusteBlumeApp.prototype.logoutError = function(e)
+{
+    this.waiting.hide();
     Ti.App.Properties.setString("cookie_session", "");
     Ti.App.Properties.setString("token", "");
     Ti.App.Properties.setBool("loggedIn", false);
-    $.text.value = "";
-    var obj = Alloy.createController("login", {
-        getStream : getStream, getToken : getToken, getUserInfo : getUserInfo
-    }).getView();
-    obj.open();
-}
+    this.text.value = "";
+    // 
+    this.loginController.getView().open();
+};
 
-function onClickLogout(e) {
-    // logout
-    $.waiting.show();
+PusteBlumeApp.prototype.attemptLogout = function(e)
+{
+    this.waiting.show();
 
     require("/api").createAPI({
-        type : "POST", url : "/users/sign_out", success : onLogout, error : onLogoutError, parameter : {
-            "_method" : "delete", "authenticity_token" : Ti.App.Properties.getString("token")
+        type : "POST", 
+        url : "/users/sign_out", 
+        success : this.logoutSuccess.bind(this), 
+        error : this.logoutError.bind(this), 
+        parameter : {
+            "_method" : "delete", 
+            "authenticity_token" : Ti.App.Properties.getString("token")
         }
     });
-}
+};
 
-function onNotification(e) {
-    // show notification
+PusteBlumeApp.prototype.notificationSuccess = function(e)
+{
     var count = 0;
     var lastSaved = new Date(Ti.App.Properties.getString("lastNotification"));
     var last = 0;
@@ -293,11 +349,13 @@ function onNotification(e) {
     Ti.App.Properties.setString("lastNotification", last);
 
     if (count > 0) {
-        showNotification(count);
+        this.showNotification(count);
     }
-}
+};
 
-function showNotification(count) {
+PusteBlumeApp.prototype.showNotification = function(count)
+{
+    /* Cancelling notifications to find vibration error */
     // create notification
     var intent = Ti.Android.createIntent({
         flags : Ti.Android.FLAG_ACTIVITY_CLEAR_TOP | Ti.Android.FLAG_ACTIVITY_NEW_TASK, className : 'com.miga.pusteblume.PusteblumeActivity'
@@ -312,76 +370,97 @@ function showNotification(count) {
         icon : Ti.App.Android.R.drawable.appicon, contentTitle : 'Pusteblume', contentText : count + " " + L("somethingNew"), contentIntent : pending, defaults : Titanium.Android.DEFAULT_ALL, flags : Titanium.Android.ACTION_DEFAULT | Titanium.Android.FLAG_AUTO_CANCEL | Titanium.Android.FLAG_SHOW_LIGHTS
     });
     // Send the notification.
-    Ti.Android.NotificationManager.notify(1, notification);
-}
+    Ti.Android.NotificationManager.notify(1, notification);    
+};
 
-function onNotificationError(e) {
+PusteBlumeApp.prototype.notificationError = function(e)
+{
     // do nothing
-}
+};
 
-function checkNotification(e) {
-    // check if there is something new
-
+PusteBlumeApp.prototype.checkNotification = function(e)
+{
     require("/api").createAPI({
-        type : "GET", url : "/notifications", success : onNotification, error : onNotificationError, parameter : {
+        type : "GET", url : "/notifications", 
+        success : this.notificationSuccess.bind(this), 
+        error : this.notificationError.bind(this), 
+        parameter : {
         }
     });
-}
+};
 
-function onSubmit(e) {
-    $.text.value = "";
-    $.text.blur();
+PusteBlumeApp.prototype.submitSuccess = function(e)
+{
+    this.text.value = "";
+    this.text.blur();
     blob = null;
-    $.btn_photo.backgroundColor = "#373937";
-    getStream();
-}
+    this.photoButton.backgroundColor = "#373937";
+    this.getStream();
+};
 
-function onSubmitError(e) {
-    //getStream();
-    $.waiting.hide();
-}
+PusteBlumeApp.prototype.submitError = function(e)
+{
+    this.waiting.hide();
+};
 
-function onClickCancel(e) {
+PusteBlumeApp.prototype.onClickCancel = function(e)
+{
     $.view_post.hide();
-}
+};
 
-function onSubmitPhoto(e) {
+PusteBlumeApp.prototype.submitPhotoSuccess = function(e)
+{
     blob = null;
-    $.text.blur();
-    $.btn_photo.backgroundColor = "#373937";
+    this.text.blur();
+    this.photoButton.backgroundColor = "#373937";
     // photo uploaded now submit post
 
-    onClickSubmit({
+    attemptSubmit({
         photoID : e.data.photo.id
     });
-}
+};
 
-function onSubmitPhotoError(e) {
-    $.waiting.hide();
-}
+PusteBlumeApp.prototype.submitPhotoError = function(e)
+{
+    this.waiting.hide();
+};
 
-function onClickSubmit(e) {
-    // post message
-    //
-    $.waiting.message = " " + L("posting") + "...";
-    $.waiting.show();
-    $.text.blur();
+PusteBlumeApp.prototype.attemptSubmit = function(e)
+{
+    this.waiting.message = " " + L("posting") + "...";
+    this.waiting.show();
+    this.text.blur();
     if (blob !== null) {
+        // In the case that you're trying to submit a photo
         require("/api").createAPI({
-            type : "POST", timeout : 20000, isBinary : true, token : true, filename : blob.file.name, url : "/photos?photo[pending]=true&photo[aspect_ids][0]=" + Ti.App.Properties.getString("aspectID") + "&set_profile_image=&qqfile=" + blob.file.name, success : onSubmitPhoto, error : onSubmitPhotoError, parameter : {
+            type : "POST", 
+            timeout : 20000, 
+            isBinary : true, 
+            token : true, 
+            filename : blob.file.name, 
+            url : "/photos?photo[pending]=true&photo[aspect_ids][0]=" + Ti.App.Properties.getString("aspectID") + "&set_profile_image=&qqfile=" + blob.file.name, 
+            success : this.submitPhotoSuccess.bind(this), 
+            error : this.submitPhotoError.bind(this), 
+            parameter : {
                 data : blob
-            }
+                }
         });
     } else {
-
+        // In the case that you're not trying to submit a photo via a blob
         match = /\n/ig;
 
-        txt = String($.text.value).replace(match, "\\r\\n");
+        txt = String(this.text.value).replace(match, "\\r\\n");
 
 
         if (e.photoID === null) {
             require("/api").createAPI({
-                type : "POST", postJSON : true, token : true, url : "/status_messages", success : onSubmit, error : onSubmitError, parameter : {
+                type : "POST", 
+                postJSON : true, 
+                token : true, 
+                url : "/status_messages", 
+                success : this.submitSuccess.bind(this), 
+                error : this.submitError.bind(this), 
+                parameter : {
                     "location_coords" : "", "aspect_ids" : Ti.App.Properties.getString("aspectID"), "status_message" : {
                         "text" : txt
                     }
@@ -389,72 +468,84 @@ function onClickSubmit(e) {
             });
         } else {
             require("/api").createAPI({
-                type : "POST", postJSON : true, token : true, url : "/status_messages", success : onSubmit, error : onSubmitError, parameter : {
-                    "location_coords" : "", "aspect_ids" : Ti.App.Properties.getString("aspectID"), "status_message" : {
+                type : "POST", 
+                postJSON : true, 
+                token : true, 
+                url : "/status_messages", 
+                success : this.submitSuccess.bind(this), 
+                error : this.submitError.bind(this), 
+                parameter : {
+                    "location_coords" : "", 
+                    "aspect_ids" : Ti.App.Properties.getString("aspectID"), 
+                    "status_message" : {
                         "text" : txt
-                    }, "photos" : String(e.photoID)
+                    }, 
+                    "photos" : String(e.photoID)
                 }
             });
         }
     }
-}
+};
 
-function onResume(e) {
+PusteBlumeApp.prototype.resume = function(e)
+{
     if (Ti.App.Properties.getString("cookie_session") !== "") {
-        getStream();
-        getUserInfo();
+        this.getStream();
+        this.getUserInfo();
     }
-}
+};
 
-if (Ti.App.Properties.getString("cookie_session") !== "" && Ti.App.Properties.getBool("loggedIn")) {
-    getStream();
-    getUserInfo();
-}
-
-function onSelectPhoto(e) {
+PusteBlumeApp.prototype.onSelectPhoto = function(e)
+{
     blob = e.media;
-    $.btn_photo.backgroundColor = "#5597C9";
-}
+    this.photoButton.backgroundColor = "#5597C9";
+};
 
-function onClickPhoto(e) {
+PusteBlumeApp.prototype.showPhoto = function(e)
+{
     if (blob === null) {
         Ti.Media.openPhotoGallery({
-            success : onSelectPhoto, mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
+            success : onSelectPhoto, 
+            mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
         });
     } else {
         blob = null;
-        $.btn_photo.backgroundColor = "#373937";
+        this.photoButton.backgroundColor = "#373937";
     }
-}
+};
 
-function onClickWrite(e) {
-    if ($.content.bottom <= 10) {
-        $.content.bottom = 120;
+PusteBlumeApp.prototype.onClickWrite = function(e)
+{
+    if (this.contentContainer.bottom <= 10) {
+        this.contentContainer.bottom = 120;
         $.view_post.show();
     } else {
-        $.content.bottom = 0;
+        this.contentContainer.bottom = 0;
         $.view_post.hide();
     }
+};
 
-}
-
-function onRefresh(e) {
-    getStream();
+PusteBlumeApp.prototype.refresh = function(e)
+{
+    this.getStream();
     //checkNotification();
     Ti.App.Properties.setString("lastNotification", "0");
-}
+};
 
-function showImage(url) {
+PusteBlumeApp.prototype.showImage = function(url)
+{
     $.view_photo.show();
-    $.img_big.image = url;
-}
+    this.bigImage.image = url;
+};
 
-function onClickImage(e) {
+PusteBlumeApp.prototype.hideImage = function(e)
+{
     $.view_photo.hide();
     $.img_big.url = null;
-}
+};
 
-function onUserinfo(e) {
+PusteBlumeApp.prototype.userInfoSuccess = function(e)
+{
     res = String(e).match(/gon.user=(.[^}][^;]+});/i);
     userinfo = JSON.parse(res[1]);
     aspects = userinfo.aspects;
@@ -465,59 +556,73 @@ function onUserinfo(e) {
     $.lbl_me.text = userinfo.name;
 
     // set aspects
-    $.view_aspects.removeAllChildren();
+    this.aspectsView.removeAllChildren();
 
     var btn = Ti.UI.createButton({
         title : "public", id : "public", width : 200, top : 5
     });
-    btn.addEventListener("click", onClickOptionAspects);
-    $.view_aspects.add(btn);
+    btn.addEventListener("click", this.chooseAspect.bind(this));
+    this.aspectsView.add(btn);
 
     for (var i = 0; i < aspects.length; ++i) {
 
         btn = Ti.UI.createButton({
             title : aspects[i].name, id : aspects[i].id, width : 200, bottom : 5
         });
-        btn.addEventListener("click", onClickOptionAspects);
-        $.view_aspects.add(btn);
+        btn.addEventListener("click", this.chooseAspect.bind(this));
+        this.aspectsView.add(btn);
     }
+    
+};
 
-}
+PusteBlumeApp.prototype.userInfoError = function(e)
+{
+    // does nothing
+};
 
-function onUserinfoError(e) {
-
-}
-
-function getUserInfo() {
-    //
+PusteBlumeApp.prototype.getUserInfo = function()
+{
     Ti.API.info("get user info");
     require("/api").createAPI({
-        type : "GET", url : "/bookmarklet", success : onUserinfo, error : onUserinfoError, noJSON : true
+        type : "GET", 
+        url : "/bookmarklet", 
+        success : this.userInfoSuccess.bind(this), 
+        error : this.userInfoError.bind(this), 
+        noJSON : true
     });
-}
+};
 
-function sendMail() {
+PusteBlumeApp.prototype.sendMail = function()
+{
     var emailDialog = Ti.UI.createEmailDialog();
     emailDialog.subject = "Hello from Diaspora";
     emailDialog.messageBody = L("txt_invite_email") + " " + Ti.App.Properties.getString("invitelink");
     emailDialog.open();
-}
+};
 
-function onInvite(e) {
+PusteBlumeApp.prototype.inviteSuccess = function(e)
+{
     var m = /id=\"invite_code\".*value=\"(.*)\".[^>]/i;
     var res = String(e).match(m);
 
     Ti.App.Properties.setString("invitelink", res[1]);
     sendMail();
-}
+};
 
-function onInviteError(e) {
-}
+PusteBlumeApp.prototype.inviteError = function(e)
+{
+    // do nothing
+};
 
-function onClickInvite(e) {
+PusteBlumeApp.prototype.invite = function(e)
+{
     if (Ti.App.Properties.getString("invitelink") === "") {
         require("/api").createAPI({
-            type : "GET", url : "/users/invitations", success : onInvite, error : onInviteError, noJSON : true
+            type : "GET", 
+            url : "/users/invitations", 
+            success : this.inviteSuccess.bind(this), 
+            error : this.inviteError.bind(this), 
+            noJSON : true
         });
     } else {
         // send mail
@@ -525,21 +630,26 @@ function onClickInvite(e) {
     }
 
     // https://joindiaspora.com/users/invitations
-}
+};
 
-function onClickSettings(e) {
-    Alloy.createController("settings");
-}
+PusteBlumeApp.prototype.openSettings = function(e)
+{
+    this.settingsController.open();
+//    Alloy.createController("settings");
+};
 
-function onTouchStart(e) {
+PusteBlumeApp.prototype.highlight = function(e)
+{
     e.source.color = "#fff";
-}
+};
 
-function onTouchEnd(e) {
+PusteBlumeApp.prototype.lowlight = function(e)
+{
     e.source.color = "#bbb";
-}
+};
 
-function onStreamRefresh(e){
+PusteBlumeApp.prototype.streamRefreshSuccess = function(e)
+{
     // get more items
     data = [];
     newPosts = 0;
@@ -567,7 +677,17 @@ function onStreamRefresh(e){
         }
 
         data.push({
-            photo : photo, photoBig : photoBig, date : Alloy.Globals.formatDate(e[i].created_at), myFav : myFav, favID : favID, isPublic : e[i]["public"], author : e[i].author.name, comment_count : String(e[i].interactions.comments_count), text : txt, icon : e[i].author.avatar.small, id : e[i].id, like_count : String(e[i].interactions.likes_count)
+            photo : photo, 
+            photoBig : photoBig, 
+            date : Alloy.Globals.formatDate(e[i].created_at), 
+            myFav : myFav, favID : favID, 
+            isPublic : e[i]["public"], 
+            author : e[i].author.name, 
+            comment_count : String(e[i].interactions.comments_count), 
+            text : txt, 
+            icon : e[i].author.avatar.small, 
+            id : e[i].id, 
+            like_count : String(e[i].interactions.likes_count)
         });
         txt = null;
         myFav = null;
@@ -591,52 +711,31 @@ function onStreamRefresh(e){
     }
 
     if (newPosts > 0) {
-        showNotification(newPosts);
+        this.showNotification(newPosts);
         newPostss = 0;
     }
     lastID = lid;
     Ti.App.Properties.setString("lastPost", lastID);
     lid = null;
     if (data.length>0){
-        content.appendData(data);
+        this.content.appendData(data);
     }
 
-    $.waiting.hide();
-}
+    this.waiting.hide();
+};
 
-function getMore(e){
+PusteBlumeApp.prototype.getMore = function(e)
+{
     // load more items
-    $.waiting.message = " " + L("getStream");
-    $.waiting.show();
+    this.waiting.message = " " + L("getStream");
+    this.waiting.show();
 
     require("/api").createAPI({
-        type : "GET", url : "/" + Ti.App.Properties.getString("stream")+"?max_time="+Ti.App.Properties.getString("lastDate"), success : onStreamRefresh, token : true, error : onStreamError
+        type : "GET", 
+        url : "/" + Ti.App.Properties.getString("stream")+"?max_time="+Ti.App.Properties.getString("lastDate"), 
+        success : this.streamRefreshSuccess.bind(this), 
+        token : true, 
+        error : this.streamError.bind(this)
     });
-}
-
-// events
-//
-Ti.App.addEventListener("resume", onResume);
-$.btn_aspect.addEventListener("click", onClickAspects);
-$.view_stream.addEventListener("click", onClickStream);
-$.lbl_option1.addEventListener("click", onClickStreamOption);
-$.lbl_option2.addEventListener("click", onClickStreamOption);
-$.lbl_option3.addEventListener("click", onClickStreamOption);
-$.lbl_option4.addEventListener("click", onClickStreamOption);
-$.btn_logout.addEventListener("click", onClickLogout);
-$.btn_submit.addEventListener("click", onClickSubmit);
-$.btn_photo.addEventListener("click", onClickPhoto);
-$.btn_write.addEventListener("click", onClickWrite);
-$.btn_refresh.addEventListener("click", onRefresh);
-$.img_big.addEventListener("click", onClickImage);
-$.btn_close.addEventListener("click", onClickImage);
-$.lbl_invite.addEventListener("click", onClickInvite);
-$.btn_settings.addEventListener("click", onClickSettings);
-
-$.btn_logout.addEventListener("touchstart", onTouchStart);
-$.btn_write.addEventListener("touchstart", onTouchStart);
-$.btn_refresh.addEventListener("touchstart", onTouchStart);
-
-$.btn_logout.addEventListener("touchend", onTouchEnd);
-$.btn_write.addEventListener("touchend", onTouchEnd);
-$.btn_refresh.addEventListener("touchend", onTouchEnd);
+};
+var app = new PusteBlumeApp($.window, initialProperties, updatedProperties, $.content, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.btn_aspect, $.view_stream, $.btn_logout, $.btn_submit, $.btn_write, $.btn_photo, $.btn_refresh, $.btn_close, $.lbl_invite, $.btn_settings, $.img_big, $.view_aspects, $.lbl_stream, $.view_photo, $.text, $.waiting);
