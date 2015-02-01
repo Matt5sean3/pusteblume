@@ -37,12 +37,5 @@
             </ScrollView>
             <Label id="lbl_invite" class="lbl_button" textid="txt_invite"></Label>
         </View>
-        <!-- photo overlay-->
-        <View id="view_photo">
-            <View id="view_bg"></View>
-            <Label>loading</Label>
-            <ImageView id="img_big"></ImageView>
-            <Button id="btn_close">x</Button>
-        </View>
     </Window>
 </Alloy>

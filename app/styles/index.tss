@@ -60,8 +60,8 @@ left:100,right:0
 
 "#btn_logout":{
 font:{
-		fontSize:25,
-		fontFamily:"FontAwesome"
+        fontSize:25,
+        fontFamily:"FontAwesome"
 },width:40,
 height: 40,
 right: 10,color:"#bbb"
@@ -69,8 +69,8 @@ right: 10,color:"#bbb"
 
 "#btn_write":{
 font:{
-		fontSize:25,
-		fontFamily:"FontAwesome"
+        fontSize:25,
+        fontFamily:"FontAwesome"
 },width: 40,
 height: 40,
 right: 110,color:"#bbb"
@@ -78,8 +78,8 @@ right: 110,color:"#bbb"
 
 "#btn_refresh":{
 font:{
-		fontSize:25,
-		fontFamily:"FontAwesome"
+        fontSize:25,
+        fontFamily:"FontAwesome"
 },
 width: 40,
 height: 40,
@@ -159,18 +159,4 @@ height: 1,
 left: 0,
 right: 0,
 backgroundColor: "#333"
-}
-
-"#view_photo":{
-visible:false,
-left:0,right:0,top:0,bottom:0
-}
-
-"#view_bg":{
-left:0,right:0,top:0,bottom:0,
-backgroundColor:"#000",opacity:0.8
-}
-
-"#btn_close":{
-width:35,height:35,right:0,top:0
 }

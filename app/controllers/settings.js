@@ -74,4 +74,4 @@ $.btn_close.addEventListener("click", onClickClose);
 $.btn_close.addEventListener("touchstart", onTouchStart);
 $.btn_close.addEventListener("touchend", onTouchEnd);
 
-// $.settings.open();
+$.settings.open();

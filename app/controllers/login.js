@@ -16,7 +16,7 @@ function LoginPage(window, username_input, password_input, login_button, registe
       this.btn_login.addEventListener("click", this.attemptLogin.bind(this));
     if(this.btn_register)
       this.btn_register.addEventListener("click", this.openRegisterController.bind(this));
-//    this.window.open();
+    this.window.open();
 }
 
 LoginPage.prototype.getToken = function()

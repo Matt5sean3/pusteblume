@@ -23,7 +23,7 @@ var updatedProperties = {
     lastDate: new Date().getTime()/1000
 };
 
-function PusteBlumeApp(window, initialProperties, updatedProperties, contentContainer, viewOptionLabels, aspectButton, streamView, logoutButton, submitButton, writeButton, photoButton, refreshButton, closeButton, inviteLabel, settingsButton, bigImage, aspectsView, streamLabel, photoView, text, waiting)
+function PusteBlumeApp(window, initialProperties, updatedProperties, contentContainer, viewOptionLabels, aspectButton, streamView, logoutButton, submitButton, writeButton, photoButton, refreshButton, inviteLabel, settingsButton, aspectsView, streamLabel, photoView, text, waiting)
 {
     this.isOut = false;
     for(property in initialProperties)
@@ -47,12 +47,7 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     this.lastID = Ti.App.Properties.getString("lastPost");
     this.aspectButton = aspectButton;
     this.aspectButton.title = Ti.App.Properties.getString("aspect");
-    this.loginController = Alloy.createController("login", {
-            getStream : this.getStream.bind(this), 
-            getToken : this.getToken.bind(this), 
-            getUserInfo : this.getUserInfo.bind(this)
-            });
-    this.settingsController = Alloy.createController("settings");
+
     this.viewOptions = viewOptionLabels;
     this.streamView = streamView;
     this.logoutButton = logoutButton;
@@ -60,10 +55,8 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     this.writeButton = writeButton;
     this.photoButton = photoButton;
     this.refreshButton = refreshButton;
-    this.closeButton = closeButton;
     this.inviteLabel = inviteLabel;
     this.settingsButton = settingsButton;
-    this.bigImage = bigImage;
     this.aspectsView = aspectsView;
     this.streamLabel = streamLabel;
     this.text = text;
@@ -82,10 +75,8 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     this.photoButton.addEventListener("click", this.showPhoto.bind(this));
     this.writeButton.addEventListener("click", this.onClickWrite.bind(this));
     this.refreshButton.addEventListener("click", this.refresh.bind(this));
-    this.bigImage.addEventListener("click", this.hideImage.bind(this));
-    this.closeButton.addEventListener("click", this.hideImage.bind(this));
     this.inviteLabel.addEventListener("click", this.invite.bind(this));
-    this.settingsButton.addEventListener("click", this.openSettings.bind(this));
+    this.settingsButton.addEventListener("click", this.openSettingsController.bind(this));
     
     this.logoutButton.addEventListener("touchstart", this.highlight.bind(this));
     this.writeButton.addEventListener("touchstart", this.highlight.bind(this));
@@ -94,10 +85,11 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     this.logoutButton.addEventListener("touchend", this.lowlight.bind(this));
     this.writeButton.addEventListener("touchend", this.lowlight.bind(this));
     this.refreshButton.addEventListener("touchend", this.lowlight.bind(this));
-    window.open();
+    this.window = window;
+    this.window.open();
     if (Ti.App.Properties.getString("cookie_session") === "" || 
         !Ti.App.Properties.getBool("loggedIn")) {
-        this.loginController.getView().open();
+        this.openLoginController();
     }
     Ti.App.addEventListener('checkNotifications', function(data) {
         checkNotification();
@@ -107,6 +99,15 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
         this.getUserInfo();
     }
 }
+
+PusteBlumeApp.prototype.openLoginController = function()
+{
+    var loginController = Alloy.createController("login", {
+            getStream : this.getStream.bind(this), 
+            getToken : this.getToken.bind(this), 
+            getUserInfo : this.getUserInfo.bind(this)
+            });
+};
 
 PusteBlumeApp.prototype.tokenSuccess = function(e)
 {
@@ -287,7 +288,7 @@ PusteBlumeApp.prototype.logoutSuccess = function(e)
     Ti.App.Properties.setBool("loggedIn", false);
     this.waiting.hide();
     this.text.value = "";
-    this.loginController.getView().open();
+    this.openLoginController();
 
     blob = null;
     this.photoButton.backgroundColor = "#373937";
@@ -301,7 +302,7 @@ PusteBlumeApp.prototype.logoutError = function(e)
     Ti.App.Properties.setBool("loggedIn", false);
     this.text.value = "";
     // 
-    this.loginController.getView().open();
+    this.openLoginController();
 };
 
 PusteBlumeApp.prototype.attemptLogout = function(e)
@@ -534,14 +535,9 @@ PusteBlumeApp.prototype.refresh = function(e)
 
 PusteBlumeApp.prototype.showImage = function(url)
 {
-    $.view_photo.show();
-    this.bigImage.image = url;
-};
-
-PusteBlumeApp.prototype.hideImage = function(e)
-{
-    $.view_photo.hide();
-    $.img_big.url = null;
+    var imageView = Alloy.createController("image_display", {
+        url: url
+        });
 };
 
 PusteBlumeApp.prototype.userInfoSuccess = function(e)
@@ -632,10 +628,9 @@ PusteBlumeApp.prototype.invite = function(e)
     // https://joindiaspora.com/users/invitations
 };
 
-PusteBlumeApp.prototype.openSettings = function(e)
+PusteBlumeApp.prototype.openSettingsController = function(e)
 {
-    this.settingsController.open();
-//    Alloy.createController("settings");
+    var settingsController = Alloy.createController("settings");
 };
 
 PusteBlumeApp.prototype.highlight = function(e)
@@ -738,4 +733,4 @@ PusteBlumeApp.prototype.getMore = function(e)
         error : this.streamError.bind(this)
     });
 };
-var app = new PusteBlumeApp($.window, initialProperties, updatedProperties, $.content, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.btn_aspect, $.view_stream, $.btn_logout, $.btn_submit, $.btn_write, $.btn_photo, $.btn_refresh, $.btn_close, $.lbl_invite, $.btn_settings, $.img_big, $.view_aspects, $.lbl_stream, $.view_photo, $.text, $.waiting);
+var app = new PusteBlumeApp($.window, initialProperties, updatedProperties, $.content, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.btn_aspect, $.view_stream, $.btn_logout, $.btn_submit, $.btn_write, $.btn_photo, $.btn_refresh, $.lbl_invite, $.btn_settings, $.view_aspects, $.lbl_stream, $.view_photo, $.text, $.waiting);

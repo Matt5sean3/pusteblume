@@ -1,0 +1,9 @@
+<Alloy>
+    <Window id="window">
+        <View id="display_image">
+            <Label>loading</Label>
+            <ImageView id="img_big"></ImageView>
+            <Button id="btn_close">x</Button>
+        </View>
+    </Window>    
+</Alloy>

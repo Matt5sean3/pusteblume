@@ -34,6 +34,8 @@
             <service type="interval" url="service_fetch.js" />
         </services>
         <manifest android:installLocation="auto" android:versionCode="24" android:versionName="1.24">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.VIBRATE" android:maxSdkVersion="11" />
             <uses-sdk android:targetSdkVersion="17" />
             <application android:theme="@style/Theme.NoActionBar" />
         </manifest>
