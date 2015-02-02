@@ -2,7 +2,8 @@
 	backgroundColor: "#000",
 	width: Ti.UI.FILL,
 	height: Ti.UI.FILL,
-	navBarHidden: true
+	navBarHidden: true,
+	theme: "Theme.NoActionBar"
 }
 
 "TableView":{
