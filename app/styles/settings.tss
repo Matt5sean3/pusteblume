@@ -4,8 +4,14 @@
 }
 
 "#view_settings":{
-	top:40,layout:"vertical",bottom:0,left:0,right:0
+	top:40,
+	layout:"vertical",
+	bottom:0,
+	left:0,
+	right:0
 }
 ".lbl_button":{
-	height:30,top:10,touchEnabled:true
+	height:30,
+	top:10,
+	touchEnabled:true
 }

@@ -1,6 +1,6 @@
 var args = arguments[0] || {};
 
-function StreamActivityMenu(args, window, container, usernameLabel, userImage, viewOptionLabels, inviteLabel, settingsButton)
+function StreamActivityMenu(args, window, container, usernameLabel, userImage, viewOptionLabels, inviteLabel, settingsButton, closeButton)
 {
 	this.userImage = userImage;
 	this.userImage.image = Ti.App.Properties.getString("userThumbnail");
@@ -14,6 +14,7 @@ function StreamActivityMenu(args, window, container, usernameLabel, userImage, v
 	this.viewOptions = viewOptionLabels;
 	this.inviteLabel = inviteLabel;
 	this.settingsButton = settingsButton;
+	this.closeButton = closeButton;
 	
     for(var c = 0; c < this.viewOptions.length; c++)
     {
@@ -21,6 +22,7 @@ function StreamActivityMenu(args, window, container, usernameLabel, userImage, v
     }
     this.inviteLabel.addEventListener("click", this.invite.bind(this));
     this.settingsButton.addEventListener("click", this.openSettingsController.bind(this));
+    this.closeButton.addEventListener("click", this.animateExit.bind(this));
     this.window = window;
     this.window.open();
     this.animateEnter();
@@ -118,4 +120,4 @@ StreamActivityMenu.prototype.openSettingsController = function(e)
     Alloy.createController("settings");
 };
 
-var menu = new StreamActivityMenu(args, $.window, $.view_menu_stream, $.lbl_me, $.img_me, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.lbl_invite, $.btn_settings);
+var menu = new StreamActivityMenu(args, $.window, $.view_menu_stream, $.lbl_me, $.img_me, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.lbl_invite, $.btn_settings, $.btn_close);

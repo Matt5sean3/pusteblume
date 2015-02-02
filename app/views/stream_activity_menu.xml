@@ -1,6 +1,8 @@
 <Alloy>
-	<Window id="window">
-        <!-- stream / activity menu -->
+	<Window id="window" zIndex="14">
+		<View class="menu">
+			<Button id="btn_close" class="btn_close"></Button>
+		</View>
         <View id="view_menu_stream">
             <View id="view_me">
                 <ImageView id="img_me"></ImageView>

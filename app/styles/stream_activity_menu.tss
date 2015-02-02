@@ -1,8 +1,9 @@
+"Window":{
+	exitOnClose: false,
+	navBarHidden: true
+}
+
 "#window": {
-	top: 0,
-	bottom: 0,
-	left: 0,
-	right: 0,
 	backgroundColor: "#4000"
 }
 
@@ -16,9 +17,10 @@
 "#view_menu_stream":{
 	width:200,
 	left:-200,
-	top:0,
+	top:40,
 	bottom:0,
-	backgroundColor:"#222"
+	backgroundColor:"#222",
+	layout:"vertical"
 }
 
 

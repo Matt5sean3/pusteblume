@@ -1,5 +1,5 @@
 <Alloy>
-    <Window id="window">
+    <Window id="window" zIndex="11">
         <View id="display_image">
             <Label>loading</Label>
             <ImageView id="img_big"></ImageView>
