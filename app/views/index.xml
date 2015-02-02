@@ -22,20 +22,5 @@
         </View>
         <ActivityIndicator id="waiting"></ActivityIndicator>
         <View id="view_aspects"></View>
-        <!-- stream / activity menu -->
-        <View id="view_menu_stream">
-            <View id="view_me">
-                <ImageView id="img_me"></ImageView>
-                <Label id="lbl_me"></Label>
-            </View>
-            <ScrollView id="view_options">
-                <Label id="lbl_option1" optionID="0" class="lbl_button" textid="txt_stream"></Label>
-                <Label id="lbl_option2" optionID="1" class="lbl_button" textid="txt_activity"></Label>
-                <Label id="lbl_option3" optionID="2" class="lbl_button" textid="txt_mentions"></Label>
-                <Label id="lbl_option4" optionID="3" class="lbl_button" textid="txt_followedtags"></Label>
-                <Label id="btn_settings" class="lbl_button" textid="txt_settings"></Label>
-            </ScrollView>
-            <Label id="lbl_invite" class="lbl_button" textid="txt_invite"></Label>
-        </View>
     </Window>
 </Alloy>

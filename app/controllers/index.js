@@ -1,3 +1,5 @@
+var args = arguments[0] || {};
+
 var blob = null;
 var service = null;
 var data = [];
@@ -6,26 +8,28 @@ var userinfo = null;
 var newPosts = 0;
 var lastID = 0;
 
+// Global Property Initialization
+// should be moved to a model
 var initialProperties = {
     token: "",
     invitelink: "",
     lastNotification: "0",
     lastPost: "0",
     stream: "stream",
-    username: "",
     aspect: "public",
     aspectID: "public",
     pod: "https://joindiaspora.com",
     cookie_session: "",
-    cookie_user: ""
+    cookie_user: "",
+    username: "",
+    fullName: "",
+    userThumbnail: ""
 };
 var updatedProperties = {
     lastDate: new Date().getTime()/1000
 };
-
-function PusteBlumeApp(window, initialProperties, updatedProperties, contentContainer, viewOptionLabels, aspectButton, streamView, logoutButton, submitButton, writeButton, photoButton, refreshButton, inviteLabel, settingsButton, aspectsView, streamLabel, photoView, text, waiting)
+function updateProperties(initialProperties, updatedProperties)
 {
-    this.isOut = false;
     for(property in initialProperties)
     {
         if(!Ti.App.Properties.hasProperty(property))
@@ -35,6 +39,14 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     {
         Ti.App.Properties.setString(property, updatedProperties[property]);
     }
+}
+updateProperties(initialProperties, updatedProperties);
+// End Global Property Initialization
+
+function PusteBlumeApp(args, window, contentContainer, aspectButton, logoutButton, submitButton, writeButton, photoButton, refreshButton, aspectsView, streamButton, streamLabel, text, waiting)
+{
+	// TODO add in better place holders for userImage and username, also make these global information
+	
     this.contentContainer = contentContainer;
     this.content = Alloy.createWidget("list", "widget", {
         getStream : this.getStream.bind(this), 
@@ -48,35 +60,27 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
     this.aspectButton = aspectButton;
     this.aspectButton.title = Ti.App.Properties.getString("aspect");
 
-    this.viewOptions = viewOptionLabels;
-    this.streamView = streamView;
     this.logoutButton = logoutButton;
     this.submitButton = submitButton;
     this.writeButton = writeButton;
     this.photoButton = photoButton;
     this.refreshButton = refreshButton;
-    this.inviteLabel = inviteLabel;
-    this.settingsButton = settingsButton;
     this.aspectsView = aspectsView;
+    this.streamButton = streamButton;
     this.streamLabel = streamLabel;
     this.text = text;
     this.waiting = waiting;
     // events
     //
-    for(var c = 0; c < this.viewOptions.length; c++)
-    {
-        this.viewOptions[c].addEventListener("click", this.chooseStream.bind(this));
-    }
+
     Ti.App.addEventListener("resume", this.resume.bind(this));
     this.aspectButton.addEventListener("click", this.showAspects.bind(this));
-    this.streamView.addEventListener("click", this.toggleStreamVisibility.bind(this));
     this.logoutButton.addEventListener("click", this.attemptLogout.bind(this));
     this.submitButton.addEventListener("click", this.attemptSubmit.bind(this));
     this.photoButton.addEventListener("click", this.showPhoto.bind(this));
     this.writeButton.addEventListener("click", this.onClickWrite.bind(this));
     this.refreshButton.addEventListener("click", this.refresh.bind(this));
-    this.inviteLabel.addEventListener("click", this.invite.bind(this));
-    this.settingsButton.addEventListener("click", this.openSettingsController.bind(this));
+    this.streamButton.addEventListener("click", this.openStreamActivityMenu.bind(this));
     
     this.logoutButton.addEventListener("touchstart", this.highlight.bind(this));
     this.writeButton.addEventListener("touchstart", this.highlight.bind(this));
@@ -102,7 +106,7 @@ function PusteBlumeApp(window, initialProperties, updatedProperties, contentCont
 
 PusteBlumeApp.prototype.openLoginController = function()
 {
-    var loginController = Alloy.createController("login", {
+    Alloy.createController("login", {
             getStream : this.getStream.bind(this), 
             getToken : this.getToken.bind(this), 
             getUserInfo : this.getUserInfo.bind(this)
@@ -237,48 +241,13 @@ PusteBlumeApp.prototype.streamError = function(e)
     this.waiting.hide();
 };
 
-PusteBlumeApp.prototype.chooseStream = function(e)
+PusteBlumeApp.prototype.openStreamActivityMenu = function(e)
 {
-    var txt = "stream";
-    if (e.source.optionID === 0) {
-        txt = "stream";
-        this.streamLabel.text = L("txt_stream");
-    } else if (e.source.optionID == 1) {
-        txt = "activity";
-        this.streamLabel.text = L("txt_activity");
-    } else if (e.source.optionID == 2) {
-        txt = "mentions";
-        this.streamLabel.text = L("txt_mentions");
-    } else if (e.source.optionID == 3) {
-        txt = "followed_tags";
-        this.streamLabel.text = L("txt_followedtags");
-    }
-
-    Ti.App.Properties.setString("stream", txt);
-
-    // get new stuff
-    this.getStream();
-    txt = null;
-
-    // hide menu
-    this.toggleStreamVisibility();
-};
-
-PusteBlumeApp.prototype.toggleStreamVisibility = function(e)
-{
-    var ani = Ti.UI.createAnimation();
-    if (this.isOut) {
-        // hide menu
-        ani.left = -200;
-        this.isOut = false;
-    } else {
-        // show menu
-        ani.left = 0;
-        this.isOut = true;
-    }
-    ani.duration = 200;
-    $.view_menu_stream.animate(ani);
-    ani = null;
+	Alloy.createController("stream_activity_menu",
+	    {
+	    	streamLabel: this.streamLabel,
+	    	getStream: this.getStream.bind(this)
+	    });
 };
 
 PusteBlumeApp.prototype.logoutSuccess = function(e)
@@ -368,7 +337,14 @@ PusteBlumeApp.prototype.showNotification = function(count)
     });
 
     var notification = Ti.Android.createNotification({
-        icon : Ti.App.Android.R.drawable.appicon, contentTitle : 'Pusteblume', contentText : count + " " + L("somethingNew"), contentIntent : pending, defaults : Titanium.Android.DEFAULT_ALL, flags : Titanium.Android.ACTION_DEFAULT | Titanium.Android.FLAG_AUTO_CANCEL | Titanium.Android.FLAG_SHOW_LIGHTS
+        icon : Ti.App.Android.R.drawable.appicon, 
+        contentTitle : 'Pusteblume', 
+        contentText : count + " " + L("somethingNew"), 
+        contentIntent : pending, 
+        defaults : Titanium.Android.DEFAULT_ALL, 
+        flags : Titanium.Android.ACTION_DEFAULT | 
+            Titanium.Android.FLAG_AUTO_CANCEL | 
+            Titanium.Android.FLAG_SHOW_LIGHTS
     });
     // Send the notification.
     Ti.Android.NotificationManager.notify(1, notification);    
@@ -535,7 +511,7 @@ PusteBlumeApp.prototype.refresh = function(e)
 
 PusteBlumeApp.prototype.showImage = function(url)
 {
-    var imageView = Alloy.createController("image_display", {
+    Alloy.createController("image_display", {
         url: url
         });
 };
@@ -546,16 +522,18 @@ PusteBlumeApp.prototype.userInfoSuccess = function(e)
     userinfo = JSON.parse(res[1]);
     aspects = userinfo.aspects;
     res = null;
-
-    // set user stuff
-    $.img_me.image = userinfo.avatar.small;
-    $.lbl_me.text = userinfo.name;
+    
+	Ti.App.Properties.setString("fullName", userinfo.name);
+	Ti.App.Properties.setString("userThumbnail", userinfo.avatar.small);
 
     // set aspects
     this.aspectsView.removeAllChildren();
 
     var btn = Ti.UI.createButton({
-        title : "public", id : "public", width : 200, top : 5
+        title : "public", 
+        id : "public", 
+        width : 200, 
+        top : 5
     });
     btn.addEventListener("click", this.chooseAspect.bind(this));
     this.aspectsView.add(btn);
@@ -563,7 +541,9 @@ PusteBlumeApp.prototype.userInfoSuccess = function(e)
     for (var i = 0; i < aspects.length; ++i) {
 
         btn = Ti.UI.createButton({
-            title : aspects[i].name, id : aspects[i].id, width : 200, bottom : 5
+            title : aspects[i].name, 
+            id : aspects[i].id, 
+            width : 200, bottom : 5
         });
         btn.addEventListener("click", this.chooseAspect.bind(this));
         this.aspectsView.add(btn);
@@ -586,51 +566,6 @@ PusteBlumeApp.prototype.getUserInfo = function()
         error : this.userInfoError.bind(this), 
         noJSON : true
     });
-};
-
-PusteBlumeApp.prototype.sendMail = function()
-{
-    var emailDialog = Ti.UI.createEmailDialog();
-    emailDialog.subject = "Hello from Diaspora";
-    emailDialog.messageBody = L("txt_invite_email") + " " + Ti.App.Properties.getString("invitelink");
-    emailDialog.open();
-};
-
-PusteBlumeApp.prototype.inviteSuccess = function(e)
-{
-    var m = /id=\"invite_code\".*value=\"(.*)\".[^>]/i;
-    var res = String(e).match(m);
-
-    Ti.App.Properties.setString("invitelink", res[1]);
-    sendMail();
-};
-
-PusteBlumeApp.prototype.inviteError = function(e)
-{
-    // do nothing
-};
-
-PusteBlumeApp.prototype.invite = function(e)
-{
-    if (Ti.App.Properties.getString("invitelink") === "") {
-        require("/api").createAPI({
-            type : "GET", 
-            url : "/users/invitations", 
-            success : this.inviteSuccess.bind(this), 
-            error : this.inviteError.bind(this), 
-            noJSON : true
-        });
-    } else {
-        // send mail
-        sendMail();
-    }
-
-    // https://joindiaspora.com/users/invitations
-};
-
-PusteBlumeApp.prototype.openSettingsController = function(e)
-{
-    var settingsController = Alloy.createController("settings");
 };
 
 PusteBlumeApp.prototype.highlight = function(e)
@@ -733,4 +668,4 @@ PusteBlumeApp.prototype.getMore = function(e)
         error : this.streamError.bind(this)
     });
 };
-var app = new PusteBlumeApp($.window, initialProperties, updatedProperties, $.content, [$.lbl_option1, $.lbl_option2, $.lbl_option3, $.lbl_option4], $.btn_aspect, $.view_stream, $.btn_logout, $.btn_submit, $.btn_write, $.btn_photo, $.btn_refresh, $.lbl_invite, $.btn_settings, $.view_aspects, $.lbl_stream, $.view_photo, $.text, $.waiting);
+var app = new PusteBlumeApp(args, $.window, $.content, $.btn_aspect, $.btn_logout, $.btn_submit, $.btn_write, $.btn_photo, $.btn_refresh, $.view_aspects, $.view_stream, $.lbl_stream, $.text, $.waiting);
