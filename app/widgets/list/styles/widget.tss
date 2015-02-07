@@ -1,8 +1,0 @@
-"#btn_more":{
-    bottom:5,
-    right:5,
-    visible:false,
-    borderRadius:10,
-    backgroundColor:"#666",
-    color:"#fff"
-}

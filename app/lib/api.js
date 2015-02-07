@@ -25,8 +25,8 @@ function API(opt) {
                 //Ti.API.info(JSON.stringify(e));
             } catch(e) {
             }
-
-        }, onerror : function(e) {
+        }, 
+        onerror : function(e) {
             // error message
             try {
                 var obj = JSON.parse(this.responseText);
@@ -38,36 +38,39 @@ function API(opt) {
             } catch(e) {
 
             }
-
             //Ti.API.info(this.responseText);
             if (error)
                 error(this.responseText);
 
-        }, onload : function(e) {
+        }, 
+        onload : function(e) {
             // webpage loaded
             //
-            if (this.readyState === 4) {
-                // download done
-                try {
-                     //Ti.API.info(JSON.stringify(e));
-                } catch(e) {
-                }
-                if (this.getResponseHeader("Set-Cookie") != "") {
-                    Ti.App.Properties.setString("cookie_session", this.getResponseHeader("Set-Cookie"));
-                } else {
-                    // Ti.API.info("empty cookie");
-                }
-                if (opt.noJSON) {
-                    // return plain text
-                    data = this.responseText;
-                } else {
-                    // return json
-                    data = JSON.parse(this.responseText);
-                }
-                if (success)
-                    success(data);
+            if (this.readyState !== 4)
+              return;
+            // download done
+            try {
+                 //Ti.API.info(JSON.stringify(e));
+            } 
+            catch(e) {
             }
-        }, timeout : timeout
+            // TODO send the cookie_session as part of the response instead
+            if (this.getResponseHeader("Set-Cookie") != "") {
+                Ti.App.Properties.setString("cookie_session", this.getResponseHeader("Set-Cookie"));
+            } else {
+                // Ti.API.info("empty cookie");
+            }
+            if (opt.noJSON) {
+                // return plain text
+                data = this.responseText;
+            } else {
+                // return json
+                data = JSON.parse(this.responseText);
+            }
+            if (success)
+                success(data);
+        }, 
+        timeout : timeout
     });
 
     xhr.autoEncodeUrl = false;
@@ -76,6 +79,7 @@ function API(opt) {
 
     if (Ti.Network.online) {
 
+		// TODO access the Session (User) object to find the pod
         Ti.API.info(Ti.App.Properties.getString("pod") + url);
         xhr.open(type, Ti.App.Properties.getString("pod") + url);
 

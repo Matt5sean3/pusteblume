@@ -1,6 +1,0 @@
-<Alloy>
-    <View>
-    <TableView id="tbl"></TableView>
-    <Button id="btn_more" title="Refresh"/>
-    </View>
-</Alloy>

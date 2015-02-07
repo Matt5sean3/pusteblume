@@ -8,6 +8,5 @@
     "os:ios": {},
     "os:android": {},
     "dependencies": {
-        "list": "1.0"
     }
 }

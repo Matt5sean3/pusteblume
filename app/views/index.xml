@@ -1,18 +1,30 @@
 <Alloy>
+	<Model src="Session" /><!-- Session singleton -->
+	<Collection src="Aspect" /><!-- Aspect Collection singleton -->
+	<Collection src="Post" /><!-- Post Collection singleton -->
     <Window id="window" zIndex="10">
-        <View id="background"/>
+        <View id="background" />
         <View class="menu">
             <View id="view_stream">
-                <View id="view_square1"/>
-                <View id="view_square2"/>
-                <View id="view_square3"/>
+                <View id="view_square1" />
+                <View id="view_square2" />
+                <View id="view_square3" />
                 <Label id="lbl_stream">Stream</Label>
             </View>
             <Button id="btn_write"></Button>
             <Button id="btn_refresh"></Button>
             <Button id="btn_logout"></Button>
         </View>
-        <View id="content"></View>
+        <!-- The stream is contained by the  -->
+        
+        <ScrollableView id="content" dataCollection="Aspect">
+        	<View>
+        		<ImageView image="{}" />
+        		<Label text="{author}" />
+				<ImageView image="{photo}" />
+				<Button id="btn_more" title="Refresh"/>
+        	</View>
+        </ScrollableView>
         <View id="view_post">
             <View id="view_linie"></View>
             <Button id="btn_aspect">Aspect</Button>
@@ -21,6 +33,12 @@
             <Button id="btn_photo" titleid="photo"></Button>
         </View>
         <ActivityIndicator id="waiting"></ActivityIndicator>
-        <View id="view_aspects"></View>
+        <!-- <View id="view_aspects"></View> -->
+        <!-- Should be automatically populated -->
+<!--        <PickerColumn id="view_aspects" dataCollection="Aspect">
+        	<PickerRow>
+        		<Button title="{name}" id="{id}" class="aspect_button" />
+        	</PickerRow>
+    	</PickerColumn> -->
     </Window>
 </Alloy>

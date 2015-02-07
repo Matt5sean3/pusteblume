@@ -148,3 +148,8 @@
 	right: 0,
 	backgroundColor: "#333"
 }
+
+".aspect_button":{
+	width: 200,
+	bottom: 5
+}
