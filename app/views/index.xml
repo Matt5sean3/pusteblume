@@ -17,12 +17,11 @@
         </View>
         <!-- The stream is contained by the  -->
         
-        <ScrollableView id="content" dataCollection="Aspect">
+        <ScrollableView id="content" dataCollection="Post">
         	<View>
-        		<ImageView image="{}" />
+        		<ImageView image="{image}" />
         		<Label text="{author}" />
 				<ImageView image="{photo}" />
-				<Button id="btn_more" title="Refresh"/>
         	</View>
         </ScrollableView>
         <View id="view_post">
@@ -33,12 +32,11 @@
             <Button id="btn_photo" titleid="photo"></Button>
         </View>
         <ActivityIndicator id="waiting"></ActivityIndicator>
-        <!-- <View id="view_aspects"></View> -->
         <!-- Should be automatically populated -->
-<!--        <PickerColumn id="view_aspects" dataCollection="Aspect">
-        	<PickerRow>
+        <ScrollableView id="view_aspects" dataCollection="Aspect">
+        	<View>
         		<Button title="{name}" id="{id}" class="aspect_button" />
-        	</PickerRow>
-    	</PickerColumn> -->
+        	</View>
+    	</ScrollableView>
     </Window>
 </Alloy>

@@ -3,8 +3,6 @@
  * and as the model for the login and logout process.
  * A better name might have been "Session.js"
  */
-// TODO rename this and its references into Session
-// TODO extract responsibility for cookie_session from api.js and insert it into this
 // TODO rewrite functions as argument bindings where possible
 
 exports.definition = {
@@ -16,17 +14,17 @@ exports.definition = {
 			"username" : "string",
 			"localUsername" : "string", // The portion of the username before the @ symbol
 			"loggedIn" : "boolean", // whether the user is logged in
-			"locked" : "boolean" // Used to prevent changes
+			"lock" : "boolean" // Used to prevent changes
 		},
 		defaults: {
 			"token" : "",
-			"pod" : "",
 			"cookie_session" : "",
 			"cookie_user" : "",
 			"username" : "",
 			"localUsername" : "",
+			"pod" : "",
 			"loggedIn" : false,
-			"locked" : false // Used for enforcing temporary immutability
+			"lock" : false // Used for enforcing temporary immutability
 		},
 		adapter: {
 			type: "properties",
@@ -37,6 +35,7 @@ exports.definition = {
 		_.extend(Model.prototype, {
 			initialize : function()
 			{
+				this.set("lock", false);
 				Ti.App.addEventListener("resume", this.resume.bind(this));
 				
 				this.on("http_load:basic:login", this.loginTokenSuccess, this);
@@ -57,29 +56,24 @@ exports.definition = {
 				this.on("http_load:basic:user_info", this.userInfoSuccess, this);
 				this.on("http_error:basic:user_info", this.userInfoError, this);
 
-				this.on("http_load:basic:aspects", this.userInfoSuccess, this);
-				this.on("http_error:basic:aspects", this.userInfoError, this);
+				this.on("http_load:basic:aspects", this.aspectsSuccess, this);
+				this.on("http_error:basic:aspects", this.aspectsError, this);
+				
+				this.on("login_success", this.retrieveAspects, this);
+				
+				this.on("error", function(model, error){alert(error);}, this);
 			},
 			validate : function(attrs)
 			{
 				// Cannot change while locked
 				// TODO add localization for locking errors
-				if(this.get("locked") && !attrs["locked"])
-				{
-					// return L("locked");
-					return "Session object is locked";
-				}
-				if(this.get("loggedIn"))
 				for(key in attrs)
 				{
 					var value = attrs[key];
+					/*
 					switch(key)
 					{
 					case "username":
-						if(this.get("loggedIn"))
-							return "Cannot change the username while logged in";
-							// TODO write localization
-							// return L("username_change_logged_in");
 						if(value == "")
 							return L("fieldEmpty");
     					if (value.indexOf("@") <= 0)
@@ -89,13 +83,24 @@ exports.definition = {
 						if(value == "")
 							return L("fieldEmpty");
 						break;
+					default:
+						break;
 					}
+					*/
 				}
 			},
-			
+			resume : function()
+			{
+				// Update information immediately after resume
+			},
+			canLogin : function()
+			{
+    			return this.get("username").indexOf("@") > 0 && this.get("password") != "";
+			},
 			// --- START NETWORK FUNCTIONS ---
 			retrieveHttpPage : function(method, uri, headers, data, id)
 			{
+				Ti.API.info(this.get("pod") + uri);
 				var req = Ti.Network.createHTTPClient();
 				this.trigger("http_start");
 				this.trigger("http_start:" + id);
@@ -177,7 +182,7 @@ exports.definition = {
     			this.set("pod", "https://" + usernameParts[1]);
     			// The pod value is derived of the parts of the username
 				this.trigger("login_token_start");
-				this.retrieveBasic("/users/sign-in", "login");
+				this.retrieveBasic("/users/sign_in", "login");
 			},
 			loginTokenSuccess : function(target, e)
 			{
@@ -208,7 +213,7 @@ exports.definition = {
             		"user[remember_me]" : 1, 
             		"authenticity_token" : this.get("token")
         			};
-				this.retrievePostForm("/users/sign-in", parameters, "login");
+				this.retrievePostForm("/users/sign_in", parameters, "login");
 			},
 			loginSuccess : function(target, e)
 			{
@@ -228,6 +233,7 @@ exports.definition = {
 			// --- START LOGOUT FUNCTIONS ---
 			retrieveLogout : function()
 			{
+				this.set("lock", true);
 				this.trigger("logout_start");
 				var parameters = {
 					"_method" : "delete", 
@@ -237,6 +243,7 @@ exports.definition = {
 			},
 			logoutSuccess : function(target, e)
 			{
+				this.set("lock", false);
 				this.set("cookie_session", "");
 				this.set("token", "");
 				this.set("loggedIn", false);
@@ -244,9 +251,7 @@ exports.definition = {
 			},
 			logoutError : function(target, e)
 			{
-				this.set("cookie_session", "");
-				this.set("token", "");
-				this.set("loggedIn", false);
+				this.set("lock", false);
 				this.trigger("logout_error", target, e);
 			},
 			// --- END LOGOUT FUNCTIONS ---
@@ -280,10 +285,11 @@ exports.definition = {
 			aspectsSuccess : function(target, e)
 			{
 				var res = String(target.responseText).match(/gon.user=(.[^}][^;]+});/i);
-				var aspects = JSON.parse(res[1]).aspects;
 				// Update the aspects singleton
 				var aspectCollection = Alloy.Collections.instance("Aspect");
 				// add the array of aspects
+				var aspects = JSON.parse(res[1]).aspects;
+				alert("Got " + aspects.length + " aspects");
 				aspectCollection.add(aspects);
 				this.trigger("aspects_success", target, e);
 			},

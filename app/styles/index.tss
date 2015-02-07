@@ -83,9 +83,9 @@
 	visible: false
 }
 
-"#view_aspects":{
+"#view_aspects": {
 	layout: "vertical",
-	visible: false,
+	visible: true,
 	width: 300,
 	height: Ti.UI.SIZE,
 	backgroundColor: "#000",

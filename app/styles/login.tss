@@ -18,7 +18,8 @@
 
 "#btn_login":{
 	left: 20,
-	right: 20
+	right: 20,
+	color: "#fff"
 }
 
 "#btn_register":{
