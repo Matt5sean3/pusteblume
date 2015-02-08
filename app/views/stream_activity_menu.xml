@@ -1,5 +1,5 @@
 <Alloy>
-	<Window id="window" zIndex="14">
+	<Window id="window" zIndex="14" modal="true">
 		<View class="menu">
 			<Button id="btn_close" class="btn_close"></Button>
 		</View>

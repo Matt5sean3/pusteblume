@@ -1,20 +1,28 @@
 <Alloy>
 	<Model src="Session" /><!-- Session singleton -->
 	<Collection src="Post" /><!-- Post Collection singleton -->
-    <Window id="window">
+    <Window id="window" modal="true">
+    	
 		<Menu platform="android" showAsAction="Titanium.SHOW_AS_ACTION_ALWAYS">
 			<MenuItem title="activities" onClick="openActivities" />
 			<MenuItem title="refresh" onClick="refresh" />
 			<MenuItem title="write" onClick="openPostWriter" />
 			<MenuItem title="logout" onClick="logout" />
 		</Menu>
-        <ScrollableView id="content" dataCollection="Post">
-        	<View>
-        		<ImageView image="{image}" />
-        		<Label text="{author}" />
-				<ImageView image="{photo}" />
-        	</View>
-        </ScrollableView>
+        <TableView id="content" dataCollection="Post" dataFilter="postFilter">
+        	<TableViewRow class="post">
+        		<ImageView class="img_author" author="{author}" image="{icon}" name="userimage" />
+        		<Label class="txt_author" text="{author}" />
+        		<Label class="lbl_text" html="{html}" />
+        		
+        		<!-- START CONDITIONAL PORTION -->
+        		<View class="imageRow">
+        			
+        		</View>
+				<!-- END CONDITIONAL PORTION -->
+				<Label class="date" text="{date}" />
+        	</TableViewRow>
+        </TableView>
         <ActivityIndicator id="waiting"></ActivityIndicator>
     </Window>
 </Alloy>

@@ -22,17 +22,25 @@ function open(session, indicator)
     // Setup event listeners on the session
     session.on("change:lock", updateWaiting.bind(this, session, indicator), this);
     session.on("logout_start", indicator.setMessage.bind(indicator, "Logging Out"), this);
-    // TODO localization: session.on("logout_start", indicator.setMessage.bind(indicator, L("loggingOut")));
+    // TODO localization: session.on("logout_start", indicator.setMessage.bind(indicator, L("loggingOut")), this);
+    session.on("stream_token_start", indicator.setMessage.bind(indicator, "Retrieving Stream Token"), this);
+    // TODO localization: session.on("stream_token_start", indicator.setMessage.bind(indicator, L("RetrievingStreamToken")), this);
+    session.on("stream_start", indicator.setMessage.bind(indicator, "Retrieving Stream"), this);
     
     session.on("logout_success", Alloy.createController.bind(Alloy, "login"), this);
-
     session.on("logout_error", alert.bind(null, "Failed to Logout"), this);
     // TODO localization: session.on("logout_error", alert.bind(null, L("logoutError")), this);
+    
 };
 
 function close(session, indicator)
 {
 	session.off(null, null, this);
+}
+
+function postFilter(collection)
+{
+	return collection.where({owner: Alloy.Models.Session.get("username")});
 }
 
 function updateWaiting(session, indicator)

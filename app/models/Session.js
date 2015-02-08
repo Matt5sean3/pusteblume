@@ -14,7 +14,9 @@ exports.definition = {
 			"username" : "string",
 			"localUsername" : "string", // The portion of the username before the @ symbol
 			"loggedIn" : "boolean", // whether the user is logged in
-			"lock" : "boolean" // Used to prevent changes
+			"lock" : "boolean", // Used to prevent changes
+			// TODO move stream property to the post collection
+			"stream" : "string" // the currently active stream
 		},
 		defaults: {
 			"token" : "",
@@ -24,7 +26,8 @@ exports.definition = {
 			"localUsername" : "",
 			"pod" : "",
 			"loggedIn" : false,
-			"lock" : false // Used for enforcing temporary immutability
+			"lock" : false,
+			"stream" : "stream"
 		},
 		adapter: {
 			type: "properties",
@@ -60,6 +63,9 @@ exports.definition = {
 				this.on("http_error:basic:aspects", this.aspectsError, this);
 				
 				this.on("login_success", this.retrieveAspects, this);
+				this.on("login_success", this.retrieveStreamToken, this);
+				
+				this.on("stream_token_success", this.retrieveStream, this);
 				
 				this.on("error", function(model, error){alert(error);}, this);
 			},
@@ -284,16 +290,9 @@ exports.definition = {
 			},
 			aspectsSuccess : function(target, e)
 			{
-				var res = String(target.responseText).match(/gon.user=(.[^}][^;]+});/i);
-				// Update the aspects singleton
+				// Update the aspects collection singleton
 				var aspectCollection = Alloy.Collections.instance("Aspect");
-				// add the array of aspects
-				var aspects = JSON.parse(res[1]).aspects;
-				for(var c = 0; c < aspects.length; c++)
-				{
-					var aspect = Alloy.createModel("Aspect", aspects[c]);
-					aspectCollection.add(aspect);
-				}
+				aspectCollection.populate(target.responseText, this.get("username"));
 				this.trigger("aspects_success", target, e);
 			},
 			aspectsError : function(target, e)
@@ -307,16 +306,19 @@ exports.definition = {
 			{
 				this.trigger("stream_token_start");
 				this.retrieveBasic("/stream", "stream");
+				this.set("lock", true);
 			},
 			streamTokenSuccess : function(target, e)
 			{
-				this.trigger("stream_token_success", target, e);
 				var m = /.*authenticity_token.*value=\"(.*)\"/;
 				var res = String(target.responseText).match(m);
 				this.set("token", res[1]);
+				this.set("lock", false);
+				this.trigger("stream_token_success", target, e);
 			},
 			streamTokenError : function(target, e)
 			{
+				this.set("lock", false);
 				this.trigger("stream_token_error", target, e);
 			},
 			retrieveStream : function()
@@ -333,16 +335,20 @@ exports.definition = {
 					null,
 					"stream"
 					);
+				this.set("lock", true);
 			},
 			streamSuccess : function(target, e)
 			{
 				// Update the Post collection singleton
-				Alloy.Collections.instance("Post").populate(target.responseText);
+				var posts = Alloy.Collections.instance("Post");
+				posts.populate(target.responseText, this.get("username"));
 				this.trigger("stream_success", target, e);
+				this.set("lock", false);
 			},
 			streamError : function(target, e)
 			{
 				this.trigger("stream_error", target, e);
+				this.set("lock", false);
 			},
 			// --- END STREAM FUNCTIONS ---
 			
