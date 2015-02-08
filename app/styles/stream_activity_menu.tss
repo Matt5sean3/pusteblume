@@ -1,6 +1,6 @@
 "Window":{
 	exitOnClose: false,
-	navBarHidden: true
+	backgroundImage: undefined
 }
 
 "#window": {

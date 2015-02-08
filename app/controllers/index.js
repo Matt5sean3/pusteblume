@@ -1,86 +1,44 @@
 var args = arguments[0] || {};
 
-function PusteBlumeApp(args, window, session, logoutButton, writeButton, refreshButton, waiting)
+var session = Alloy.Models.Session;
+
+// Keeping things minimal now
+var openPostWriter = Alloy.createController.bind(Alloy, "post_submission");
+var refresh = function(){};
+var logout = session.retrieveLogout.bind(session);
+var openActivities = Alloy.createController.bind(Alloy, "stream_activity_menu");
+
+$.window.addEventListener("open", open.bind($.window, session, $.waiting));
+$.window.addEventListener("close", close.bind($.window, session, $.waiting));
+$.window.open();
+
+if(session.get("cookie_session") == "" || !session.get("loggedIn"))
+    Alloy.createController("login");
+
+// Hoisted functions
+function open(session, indicator)
 {
-	this.session = session;
-	
-    this.logoutButton = logoutButton;
-    this.writeButton = writeButton;
-    this.refreshButton = refreshButton;
-    this.waiting = waiting;
+	this.activity.invalidateOptionsMenu();
+    // Setup event listeners on the session
+    session.on("change:lock", updateWaiting.bind(this, session, indicator), this);
+    session.on("logout_start", indicator.setMessage.bind(indicator, "Logging Out"), this);
+    // TODO localization: session.on("logout_start", indicator.setMessage.bind(indicator, L("loggingOut")));
     
-    // events
-    //
-    this.logoutButton.addEventListener("click", this.session.retrieveLogout.bind(this.session));
+    session.on("logout_success", Alloy.createController.bind(Alloy, "login"), this);
 
-    this.logoutButton.addEventListener("touchstart", this.highlight.bind(this));
-    this.writeButton.addEventListener("touchstart", this.highlight.bind(this));
-    this.refreshButton.addEventListener("touchstart", this.highlight.bind(this));
+    session.on("logout_error", alert.bind(null, "Failed to Logout"), this);
+    // TODO localization: session.on("logout_error", alert.bind(null, L("logoutError")), this);
+};
 
-    this.logoutButton.addEventListener("touchend", this.lowlight.bind(this));
-    this.writeButton.addEventListener("touchend", this.lowlight.bind(this));
-    this.refreshButton.addEventListener("touchend", this.lowlight.bind(this));
-    
-    this.window = window;
-    this.window.addEventListener("open", this.open.bind(this));
-    this.window.addEventListener("close", this.close.bind(this));
-    this.window.open();
-    if(this.session.get("cookie_session") == "" ||
-    	!this.session.get("loggedIn"))
-    	Alloy.createController("login");
-    // TODO restore notification functionality
+function close(session, indicator)
+{
+	session.off(null, null, this);
 }
 
-PusteBlumeApp.prototype.open = function()
+function updateWaiting(session, indicator)
 {
-    this.session.on("change:lock", this.updateWaiting, this);
-
-    // Setup event listeners on the session
-    this.session.on("logout_start", this.waiting.setMessage.bind(this.waiting, "Logging Out"), this);
-    // TODO localization: this.session.on("logout_start", this.waiting.setMessage.bind(this.waiting, L("loggingOut")));
-    this.session.on("logout_success", Alloy.createController.bind(Alloy, "login"), this);
-    // TODO localization: this.session.on("logout_error", alert.bind(null, L("logoutError")), this);
-    this.session.on("logout_error", alert.bind(null, "Failed to Logout"), this);
-    
-};
-
-PusteBlumeApp.prototype.close = function()
-{
-	this.session.off(null, null, this);
-};
-
-PusteBlumeApp.prototype.showAspects = function(e)
-{
-    $.view_aspects.show();
-};
-
-PusteBlumeApp.prototype.openStreamActivityMenu = function(e)
-{
-	Alloy.createController("stream_activity_menu");
-};
-
-PusteBlumeApp.prototype.attemptLogout = function(e)
-{
-	this.session.retrieveLogout();
-};
-
-PusteBlumeApp.prototype.highlight = function(e)
-{
-    e.source.color = "#fff";
-};
-
-PusteBlumeApp.prototype.lowlight = function(e)
-{
-    e.source.color = "#bbb";
-};
-
-PusteBlumeApp.prototype.updateWaiting = function()
-{
-	// Reveal waiting while the username and password are disabled
-	if(this.session.get("lock"))
-        this.waiting.show();
+	if(session.get("lock"))
+        indicator.show();
     else
-        this.waiting.hide();
-};
-
-var app = new PusteBlumeApp(args, $.window, Alloy.Models.Session, $.btn_logout, $.btn_write, $.btn_refresh, $.waiting);
+        indicator.hide();
+}

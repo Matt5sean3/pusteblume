@@ -1,6 +1,5 @@
 "#register":{
-	exitOnClose: false,
-	navBarHidden: true
+	exitOnClose: false
 }
 
 "#view_register":{

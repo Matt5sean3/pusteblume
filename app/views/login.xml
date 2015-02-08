@@ -1,6 +1,6 @@
 <Alloy>
 	<Model src="Session" /><!-- User Data Singleton -->
-    <Window id="window" zIndex="100">
+    <Window id="window">
         <View id="view_login">
             <Label id="lbl_login" textid="loginTitle"></Label>
             <TextField id="username" hintText="Username@pod"></TextField>
@@ -8,10 +8,6 @@
             <Button id="btn_login" titleid="login"></Button>
             <!--<Button id="btn_register" titleid="register"></Button>-->
         </View>
-        <!-- 
-        	 Investigate whether there's a more android specific waiting, 
-             I seem to remember one existing
-        -->
         <ActivityIndicator id="waiting"></ActivityIndicator>
     </Window>
 </Alloy>

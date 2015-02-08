@@ -1,0 +1,53 @@
+"#view_post":{
+	bottom: 0,
+	left: 0,
+	right: 0,
+	height: 120
+}
+
+"#text":{
+	left: 0,
+	right: 80,
+	top: 0,
+	bottom: 0,
+	hintText: "Type some text"
+}
+
+"#btn_photo":{
+	right: 0,
+	height:38,
+	top: 38,
+	width:80,
+	font:{
+		fontSize: 12
+	}
+}
+
+"#btn_aspect":{
+	width: 80,
+	top: 0,
+	height: 38,
+	font:{
+		fontSize: 12
+	},
+	right: 0
+}
+
+"#btn_submit":{
+	width: 80,
+	bottom: 0,
+	height: 44,
+	font:{
+		fontSize: 12
+	},
+	right: 0
+}
+
+"#view_linie":{
+	top: 0,
+	height: 1,
+	left: 0,
+	right: 0,
+	backgroundColor: "#333"
+}
+

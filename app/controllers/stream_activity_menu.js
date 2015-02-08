@@ -2,6 +2,7 @@ var args = arguments[0] || {};
 
 function StreamActivityMenu(args, window, container, usernameLabel, userImage, viewOptionLabels, inviteLabel, settingsButton, closeButton)
 {
+    this.window = window;
 	this.userImage = userImage;
 	this.userImage.image = Ti.App.Properties.getString("userThumbnail");
 	this.getStream = args.getStream;
@@ -23,7 +24,6 @@ function StreamActivityMenu(args, window, container, usernameLabel, userImage, v
     this.inviteLabel.addEventListener("click", this.invite.bind(this));
     this.settingsButton.addEventListener("click", this.openSettingsController.bind(this));
     this.closeButton.addEventListener("click", this.animateExit.bind(this));
-    this.window = window;
     this.window.open();
     this.animateEnter();
 }

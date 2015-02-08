@@ -289,8 +289,11 @@ exports.definition = {
 				var aspectCollection = Alloy.Collections.instance("Aspect");
 				// add the array of aspects
 				var aspects = JSON.parse(res[1]).aspects;
-				alert("Got " + aspects.length + " aspects");
-				aspectCollection.add(aspects);
+				for(var c = 0; c < aspects.length; c++)
+				{
+					var aspect = Alloy.createModel("Aspect", aspects[c]);
+					aspectCollection.add(aspect);
+				}
 				this.trigger("aspects_success", target, e);
 			},
 			aspectsError : function(target, e)

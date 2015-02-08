@@ -1,0 +1,17 @@
+<Alloy>
+	<Collection src="Aspect" /><!-- Aspect Collection singleton -->
+	<Window id="window">
+        <View id="view_post">
+            <View id="view_linie"></View>
+	        <Picker id="btn_aspect">
+    	    	<PickerColumn dataCollection="Aspect">
+    	    		<PickerRow title="{name}" />
+    	    	</PickerColumn>
+    	    </Picker>
+            <TextArea id="text"></TextArea>
+            <Button id="btn_submit" titleid="post"></Button>
+            <Button id="btn_photo" titleid="photo"></Button>
+        </View>
+        <ActivityIndicator id="waiting"></ActivityIndicator>
+	</Window>
+</Alloy>

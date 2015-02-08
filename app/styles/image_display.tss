@@ -1,7 +1,6 @@
 "Window":{
     backgroundColor: "#d000",
-	exitOnClose: false,
-	navBarHidden: true
+	exitOnClose: false
 }
 
 "#display_image" : {

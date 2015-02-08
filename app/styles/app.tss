@@ -1,11 +1,3 @@
-"Window": {
-	backgroundColor: "#000",
-	width: Ti.UI.FILL,
-	height: Ti.UI.FILL,
-	navBarHidden: true,
-	theme: "Theme.NoActionBar"
-}
-
 "TableView":{
 	backgroundColor: "transparent"
 }
@@ -23,35 +15,6 @@
 
 "Button":{
 	backgroundColor: "transparent"
-}
-
-"#background":{
-	width: Ti.UI.FILL,
-	height: Ti.UI.FILL,
-	top: 0,
-	left: 0,
-	right: 0,
-	bottom: 0,
-	backgroundGradient:{
-		type: 'linear',
-		startPoint: {
-			x: '0%',
-			y: '40%'
-		},
-		endPoint: {
-			x: '0%',
-			y: '100%'
-		},
-		colors: [
-			{
-				color: '#000000',
-				offset: 0.0
-			}, {
-				color: '#2d2d30',
-				offset: 1.0
-			}
-		]
-	}
 }
 
 "TextArea":{
@@ -191,3 +154,6 @@
 	left: 5,
 	color: "#bbb"
 }
+
+
+

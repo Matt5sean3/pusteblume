@@ -1,22 +1,13 @@
 <Alloy>
 	<Model src="Session" /><!-- Session singleton -->
-	<Collection src="Aspect" /><!-- Aspect Collection singleton -->
 	<Collection src="Post" /><!-- Post Collection singleton -->
-    <Window id="window" zIndex="10">
-        <View id="background" />
-        <View class="menu">
-            <View id="view_stream">
-                <View id="view_square1" />
-                <View id="view_square2" />
-                <View id="view_square3" />
-                <Label id="lbl_stream">Stream</Label>
-            </View>
-            <Button id="btn_write"></Button>
-            <Button id="btn_refresh"></Button>
-            <Button id="btn_logout"></Button>
-        </View>
-        <!-- The stream is contained by the  -->
-        
+    <Window id="window">
+		<Menu platform="android" showAsAction="Titanium.SHOW_AS_ACTION_ALWAYS">
+			<MenuItem title="activities" onClick="openActivities" />
+			<MenuItem title="refresh" onClick="refresh" />
+			<MenuItem title="write" onClick="openPostWriter" />
+			<MenuItem title="logout" onClick="logout" />
+		</Menu>
         <ScrollableView id="content" dataCollection="Post">
         	<View>
         		<ImageView image="{image}" />
@@ -24,19 +15,6 @@
 				<ImageView image="{photo}" />
         	</View>
         </ScrollableView>
-        <View id="view_post">
-            <View id="view_linie"></View>
-            <Button id="btn_aspect">Aspect</Button>
-            <TextArea id="text"></TextArea>
-            <Button id="btn_submit" titleid="post"></Button>
-            <Button id="btn_photo" titleid="photo"></Button>
-        </View>
         <ActivityIndicator id="waiting"></ActivityIndicator>
-        <!-- Should be automatically populated -->
-        <ScrollableView id="view_aspects" dataCollection="Aspect">
-        	<View>
-        		<Button title="{name}" id="{id}" class="aspect_button" />
-        	</View>
-    	</ScrollableView>
     </Window>
 </Alloy>

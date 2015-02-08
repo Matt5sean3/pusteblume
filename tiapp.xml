@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ti:app xmlns:ti="http://ti.appcelerator.org">
     <id>com.miga.pusteblume</id>
     <name>Pusteblume</name>
@@ -13,11 +13,11 @@
     <statusbar-style>default</statusbar-style>
     <statusbar-hidden>false</statusbar-hidden>
     <fullscreen>false</fullscreen>
-    <navbar-hidden>true</navbar-hidden>
+    <navbar-hidden>false</navbar-hidden>
     <analytics>false</analytics>
     <guid>618ec500-92f3-43ed-9cf7-20b9f634bf6a</guid>
     <property name="ti.ui.defaultunit" type="string">dp</property>
-    <property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>
+    <!--<property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>-->
     <iphone>
         <orientations device="iphone">
             <orientation>Ti.UI.PORTRAIT</orientation>
@@ -31,13 +31,14 @@
     </iphone>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <services>
-            <service type="interval" url="service_fetch.js" />
+            <service type="interval" url="service_fetch.js"/>
         </services>
-        <manifest android:installLocation="auto" android:versionCode="24" android:versionName="1.24">
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.VIBRATE" />
-            <uses-sdk android:targetSdkVersion="17" />
-            <application android:theme="@style/Theme.NoActionBar" />
+        <manifest android:installLocation="auto"
+            android:versionCode="24" android:versionName="1.24">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.VIBRATE"/>
+            <uses-sdk android:targetSdkVersion="17"/>
+            <!--<application android:theme="@style/Theme.Titanium"/>-->
         </manifest>
     </android>
     <mobileweb>
@@ -48,9 +49,7 @@
         </splash>
         <theme>default</theme>
     </mobileweb>
-    <modules>
-        <module platform="android">ti.styledlabel</module>
-    </modules>
+    <modules/>
     <deployment-targets>
         <target device="iphone">false</target>
         <target device="ipad">false</target>
@@ -59,7 +58,7 @@
         <target device="mobileweb">false</target>
         <target device="tizen">false</target>
     </deployment-targets>
-    <sdk-version>3.4.1.GA</sdk-version>
+    <sdk-version>3.5.0.GA</sdk-version>
     <plugins>
         <plugin version="1.0">ti.alloy</plugin>
     </plugins>
