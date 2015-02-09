@@ -2,7 +2,7 @@
 <ti:app xmlns:ti="http://ti.appcelerator.org">
     <id>com.miga.pusteblume</id>
     <name>Pusteblume</name>
-    <version>1.23</version>
+    <version>1.25</version>
     <publisher>Michael Gangolf</publisher>
     <url>http://www.migaweb.de</url>
     <description>Diaspora client for Android</description>
@@ -33,12 +33,10 @@
         <services>
             <service type="interval" url="service_fetch.js"/>
         </services>
-        <manifest android:installLocation="auto"
-            android:versionCode="24" android:versionName="1.24">
+        <manifest android:installLocation="auto" android:versionCode="25" android:versionName="1.25">
             <uses-permission android:name="android.permission.INTERNET"/>
             <uses-permission android:name="android.permission.VIBRATE"/>
-            <uses-sdk android:targetSdkVersion="17"/>
-            <!--<application android:theme="@style/Theme.Titanium"/>-->
+            <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="19" />
         </manifest>
     </android>
     <mobileweb>

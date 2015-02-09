@@ -14,3 +14,9 @@
 	top:10,
 	touchEnabled:true
 }
+
+"#btn_images":{
+	borderRadius:4,
+	borderWidth:1,
+	borderColor:"#999"
+}

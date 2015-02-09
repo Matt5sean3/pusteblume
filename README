@@ -1,6 +1,8 @@
 Pusteblume - Diaspora Android App
 
-Tested and compiled with Appcelerator Titanium 3.4.1 GA (SDK 3.4.1 GA)
+Tested and compiled with Appcelerator Titanium SDK 3.5.0 GA and Android 5
+
+At the moment there is no f-droid repo yet. 
 
 Store: https://play.google.com/store/apps/details?id=com.miga.pusteblume
 Pusteblume github: https://github.com/m1ga/pusteblume

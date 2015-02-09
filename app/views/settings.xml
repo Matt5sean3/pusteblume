@@ -5,6 +5,7 @@
 			<Button id="btn_close" class="btn_close"></Button>
 		</View>
 		<View id="view_settings">
+			<Button id="btn_images" title="show images"/>
 			<Label id="lbl_service_start" class="lbl_button" >Minutes:</Label>
 			<TextField id="tf_interval" hintText="Minutes" value="10"></TextField>
 			<Label id="lbl_service" class="lbl_button" >start service</Label>

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var args = arguments[0] || {};
 
 var session = Alloy.Models.Session;

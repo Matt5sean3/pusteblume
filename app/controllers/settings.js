@@ -69,9 +69,29 @@ function onTouchEnd(e) {
     e.source.color = "#bbb";
 }
 
+function onClickImages(e){
+    if (Ti.App.Properties.getBool("showImages")){
+        $.btn_images.title = "show images";
+        Ti.App.Properties.setBool("showImages",false);
+    } else {
+        $.btn_images.title = "hide images";
+        Ti.App.Properties.setBool("showImages",true);
+    }
+    alert("Please restart the app");
+}
+
+if (Ti.App.Properties.getBool("showImages")){
+    $.btn_images.title = "hide images";
+} else {
+    $.btn_images.title = "show images";
+}
+
 $.btn_close.addEventListener("click", onClickClose);
+$.btn_images.addEventListener("click", onClickImages);
 
 $.btn_close.addEventListener("touchstart", onTouchStart);
 $.btn_close.addEventListener("touchend", onTouchEnd);
+$.btn_images.addEventListener("touchstart", onTouchStart);
+$.btn_images.addEventListener("touchend", onTouchEnd);
 
 $.settings.open();
