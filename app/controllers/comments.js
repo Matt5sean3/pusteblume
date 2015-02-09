@@ -1,6 +1,8 @@
 var args = arguments[0] || {};
 var content = Alloy.createWidget("list", "widget", {
-    getStream : getStream, click : false
+    getStream: getStream,
+    click: false,
+    comments: true
 });
 var favID = args.data.favID || 0;
 $.content.add(content.getView());
@@ -25,7 +27,10 @@ function getStream() {
     $.waiting.show();
 
     require("/api").createAPI({
-        type : "GET", url : "/posts/" + args.id + "/comments", success : onComments, error : onCommentsError
+        type: "GET",
+        url: "/posts/" + args.id + "/comments",
+        success: onComments,
+        error: onCommentsError
     });
 }
 
@@ -33,22 +38,25 @@ function onCommentsError(e) {
     $.waiting.hide();
 }
 
-function onComments(e) {
+function onComments(comments) {
     $.waiting.hide();
     var mainData = [];
 
-    //$.lbl_comments.text = e.length;
+    for (var i = 0; i < comments.length; ++i) {
 
-    for (var i = 0; i < e.length; ++i) {
-
-        var txt = String(e[i].text).replace(/<(?:.|\n)*?>/gm, '');
-
+        var txt = String(comments[i].text).replace(/<(?:.|\n)*?>/gm, '');
         mainData.push({
-            type : "comments", author : e[i].author.name, text : txt, icon : e[i].author.avatar.small, date : Alloy.Globals.formatDate(e[i].created_at), image : ""
+            type: "comments",
+            author: comments[i].author.name,
+            text: txt,
+            icon: comments[i].author.avatar.small,
+            date: Alloy.Globals.formatDate(comments[i].created_at),
+            image: ""
         });
     }
     content.setData(mainData);
     mainData = null;
+    comments = null;
 }
 
 function onClickClose(e) {
@@ -86,8 +94,13 @@ function onPostLikeError(e) {
 function onClickPost(e) {
     $.waiting.show();
     require("/api").createAPI({
-        type : "POST", url : "/posts/" + args.id + "/comments", token : true, success : onPostComment, error : onPostCommentError, parameter : {
-            "text" : $.txt_comment.value
+        type: "POST",
+        url: "/posts/" + args.id + "/comments",
+        token: true,
+        success: onPostComment,
+        error: onPostCommentError,
+        parameter: {
+            "text": $.txt_comment.value
         }
     });
 
@@ -108,7 +121,12 @@ function onClickLike(e) {
     Ti.API.info("like id:" + del);
 
     require("/api").createAPI({
-        type : type, url : "/posts/" + args.id + "/likes" + del, token : true, success : onPostLike, error : onPostLikeError, noJSON : val
+        type: type,
+        url: "/posts/" + args.id + "/likes" + del,
+        token: true,
+        success: onPostLike,
+        error: onPostLikeError,
+        noJSON: val
     });
 }
 

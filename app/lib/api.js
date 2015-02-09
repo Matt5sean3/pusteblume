@@ -19,14 +19,14 @@ function API(opt) {
     var para = parameter;
     var timeout = (opt.timeout) || 8000;
     var xhr = Ti.Network.createHTTPClient({
-        onreadystatechange : function(e) {
+        onreadystatechange: function(e) {
             // log output
             try {
                 //Ti.API.info(JSON.stringify(e));
-            } catch(e) {
-            }
-        }, 
-        onerror : function(e) {
+            } catch (e) {}
+
+        },
+        onerror: function(e) {
             // error message
             try {
                 var obj = JSON.parse(this.responseText);
@@ -35,7 +35,7 @@ function API(opt) {
                 } else {
                     alert("error");
                 }
-            } catch(e) {
+            } catch (e) {
 
             }
             //Ti.API.info(this.responseText);
@@ -71,6 +71,7 @@ function API(opt) {
                 success(data);
         }, 
         timeout : timeout
+        },
     });
 
     xhr.autoEncodeUrl = false;
