@@ -2,13 +2,23 @@
 	<Model src="Session" /><!-- Session singleton -->
 	<Collection src="Post" /><!-- Post Collection singleton -->
     <Window id="window" modal="true">
-    	
+    	<!-- TODO add fallbacks for non-Android platforms -->
 		<Menu platform="android" showAsAction="Titanium.SHOW_AS_ACTION_ALWAYS">
-			<MenuItem title="activities" onClick="openActivities" />
 			<MenuItem title="refresh" onClick="refresh" />
 			<MenuItem title="write" onClick="openPostWriter" />
 			<MenuItem title="logout" onClick="logout" />
+			<MenuItem title="invite" onClick="invite" />
+			<MenuItem title="settings" onClick="settings" />
 		</Menu>
+		<View layout="vertical">
+        <Picker>
+        	<PickerColumn>
+        		<PickerRow onClick="chooseStream" titleid="txt_stream" />
+        		<PickerRow onClick="chooseActivity" titleid="txt_activity" />
+        		<PickerRow onClick="chooseMentions" titleid="txt_mentions" />
+        		<PickerRow onClick="chooseFollowedTags" titleid="txt_followedtags" />
+        	</PickerColumn>
+    	</Picker>
         <TableView id="content" dataCollection="Post" dataFilter="postFilter">
         	<TableViewRow class="post">
         		<ImageView class="img_author" author="{author}" image="{icon}" name="userimage" />
@@ -23,6 +33,7 @@
 				<Label class="date" text="{date}" />
         	</TableViewRow>
         </TableView>
+        </View>
         <ActivityIndicator id="waiting"></ActivityIndicator>
     </Window>
 </Alloy>

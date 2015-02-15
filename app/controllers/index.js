@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 var args = arguments[0] || {};
 
 var session = Alloy.Models.Session;
@@ -7,7 +6,6 @@ var session = Alloy.Models.Session;
 var openPostWriter = Alloy.createController.bind(Alloy, "post_submission");
 var refresh = function(){};
 var logout = session.retrieveLogout.bind(session);
-var openActivities = Alloy.createController.bind(Alloy, "stream_activity_menu");
 
 $.window.addEventListener("open", open.bind($.window, session, $.waiting));
 $.window.addEventListener("close", close.bind($.window, session, $.waiting));
@@ -51,3 +49,72 @@ function updateWaiting(session, indicator)
     else
         indicator.hide();
 }
+
+function settings()
+{
+	Alloy.createController("settings");
+}
+
+function chooseStream()
+{
+    Ti.App.Properties.setString("stream", "stream");
+    L("txt_stream");
+    getStream();
+}
+
+function chooseActivity()
+{
+    Ti.App.Properties.setString("stream", "activity");
+	L("txt_activity");
+    getStream();
+}
+
+function chooseMentions()
+{
+    Ti.App.Properties.setString("stream", "mentions");
+    L("txt_mentions");
+    getStream();
+}
+
+function chooseFollowedTags()
+{
+    Ti.App.Properties.setString("stream", "followed_tags");
+    L("txt_followedtags");
+    getStream();
+}
+
+function inviteSuccess(e)
+{
+    var m = /id=\"invite_code\".*value=\"(.*)\".[^>]/i;
+    var res = String(e).match(m);
+
+    Ti.App.Properties.setString("invitelink", res[1]);
+    sendMail();
+};
+
+function inviteError(e)
+{
+    // do nothing
+};
+
+function invite(e)
+{
+    if (Ti.App.Properties.getString("invitelink") === "") {
+        require("/api").createAPI({
+            type : "GET", 
+            url : "/users/invitations", 
+            success : inviteSuccess, 
+            error : inviteError, 
+            noJSON : true
+        });
+    }
+    // https://joindiaspora.com/users/invitations
+};
+
+function sendMail()
+{
+    var emailDialog = Ti.UI.createEmailDialog();
+    emailDialog.subject = "Hello from Diaspora";
+    emailDialog.messageBody = L("txt_invite_email") + " " + Ti.App.Properties.getString("invitelink");
+    emailDialog.open();
+};
