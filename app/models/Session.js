@@ -61,10 +61,7 @@ exports.definition = {
 
 				this.on("http_load:basic:aspects", this.aspectsSuccess, this);
 				this.on("http_error:basic:aspects", this.aspectsError, this);
-				
-				this.on("login_success", this.retrieveAspects, this);
-				this.on("login_success", this.retrieveStreamToken, this);
-				
+								
 				this.on("stream_token_success", this.retrieveStream, this);
 				
 				this.on("error", function(model, error){alert(error);}, this);
@@ -352,29 +349,47 @@ exports.definition = {
 			},
 			// --- END STREAM FUNCTIONS ---
 			
-			// --- START SUBMISSION FUNCTIONS
+			// --- START SUBMISSION FUNCTIONS ---
 			retrieveSubmit : function()
 			{
 				this.trigger("submit_start");
-			},
-			submitSuccess : function(target, e)
-			{
+				// With image
+				/*
 				this.retrieveHttpPage(
-					"GET",
+					"POST",
 					"/" + this.get("stream"),
 					{
 						"Accept" : "application/json, text/javascript, */*; q=0.01",
 						"X-Requested-With" : "XMLHttpRequest",
-						"X-CSRF-Token" : this.get("token")
+						"X-CSRF-Token" : this.get("token"),
+						"Content-Type" : "application/octet-stream",
+						"X-File-Name" : blob.file.name
+					},
+					null,
+					"submit"
+				); 
+				*/
+				// No image
+			},
+			submitSuccess : function(target, e)
+			{
+				this.retrieveHttpPage(
+					"POST",
+					"/" + this.get("stream"),
+					{
+						"Accept" : "application/json, text/javascript, */*; q=0.01",
+						"X-Requested-With" : "XMLHttpRequest",
+						"X-CSRF-Token" : this.get("token"),
+						"Content-Type" : "application/octet-stream",
+						"X-File-Name" : blob.file.name
 					},
 					null,
 					"stream"
-					);
+				); 
+				
+				// TODO apply a longer timeout (20000ms)
 		        /* With Image
 		        require("/api").createAPI({
-		            type : "POST", 
-		            timeout : 20000, 
-		            isBinary : true, 
 		            token : true, 
 		            filename : blob.file.name, 
 		            url : "/photos?photo[pending]=true&photo[aspect_ids][0]=" + Ti.App.Properties.getString("aspectID") + "&set_profile_image=&qqfile=" + blob.file.name, 
@@ -422,7 +437,11 @@ exports.definition = {
 			{
 				
 			}
-			// --- END SUBMISSION FUNCTIONS
+			// --- END SUBMISSION FUNCTIONS ---
+			
+			// --- START COMMENT FUNCTIONS ---
+			
+			// --- END COMMENT FUNCTIONS ---
 		});
 
 		return Model;

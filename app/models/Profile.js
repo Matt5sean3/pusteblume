@@ -1,8 +1,12 @@
 exports.definition = {
 	config: {
 		columns: {
+			"pod": "int",
 			"name" : "string",
-			"thumbnail" : "string"
+			"smallAvatar": "string",
+			"mediumAvatar": "string",
+			"largeAvatar": "string",
+			"gender" : "string"
 		},
 		defaults: {
 			"name" : "",
@@ -16,6 +20,18 @@ exports.definition = {
 	extendModel: function(Model) {
 		_.extend(Model.prototype, {
 			// extended functions and properties go here
+			getPod : function()
+			{
+				return Alloy.Collections.instance("Pod").get(this.get("pod"));
+			},
+			getPosts : function()
+			{
+				return Alloy.Collections.instance("Post").where({pod: this.id});
+			},
+			getTags : function()
+			{
+				return Alloy.Collections.instance("Tag").where({pod: this.id});
+			}
 		});
 
 		return Model;

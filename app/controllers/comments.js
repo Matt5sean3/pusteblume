@@ -1,4 +1,7 @@
 var args = arguments[0] || {};
+
+var session = Alloy.Models.Session;
+
 var content = Alloy.createWidget("list", "widget", {
     getStream: getStream,
     click: false,
@@ -23,7 +26,7 @@ $.btn_like.liked = args.data.myFav;
 function getStream() {
     // get comments from server
     //
-    $.waiting.message = L("getCommets");
+    $.waiting.message = L("getComments");
     $.waiting.show();
 
     require("/api").createAPI({
@@ -167,3 +170,4 @@ $.btn_like.addEventListener("touchend", onTouchEnd);
 
 $.btn_close.addEventListener("touchstart", onTouchStart);
 $.btn_close.addEventListener("touchend", onTouchEnd);
+

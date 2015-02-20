@@ -1,12 +1,12 @@
 exports.definition = {
 	config: {
 		columns: {
-			"name" : "string",
-			"id" : "string"
+			"profile" : "int", // the id of the associated profile
+			"name": "string"
 		},
 		defaults: {
-			"name" : "",
-			"id" : ""
+			"type" : 0,
+			"profile" : 0
 		},
 		adapter: {
 			type: "properties",
@@ -15,6 +15,13 @@ exports.definition = {
 	},
 	extendModel: function(Model) {
 		_.extend(Model.prototype, {
+			getProfile : function() {
+				return Alloy.Collections.instance("Profile").get(this.get("profile"));
+			},
+			getContacts : function()
+			{
+				return Alloy.Collections.instance("Contact").where({aspect: this.id});
+			}
 			// extended functions and properties go here
 		});
 
